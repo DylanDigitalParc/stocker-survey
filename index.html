@@ -54,7 +54,10 @@ html, body {
 .sa-app {
   max-width: var(--sa-max-width);
   margin: 24px auto;
-  min-height: calc(100vh - 48px);
+  /* No forced viewport-height min-height here on purpose: the card should
+     hug its own content (this is what was leaving a large empty gap below
+     the Start button on the welcome screen, and below shorter question
+     lists generally). Full-height is only for the true mobile case below. */
   display: flex;
   flex-direction: column;
   background: var(--sa-white);
@@ -81,6 +84,7 @@ html, body {
 .sa-header__brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-bottom: 14px;
 }
 .sa-logo {
@@ -235,9 +239,62 @@ html, body {
 .sa-btn--secondary:hover { background: #f0f3f5; }
 
 /* Welcome screen */
-.sa-welcome { text-align: center; padding-top: 12px; }
+.sa-welcome { text-align: center; padding-top: 12px; padding-bottom: 8px; }
 .sa-welcome h1 { font-size: 26px; color: var(--sa-navy-dark); margin: 4px 0 12px; }
 .sa-welcome p { color: var(--sa-text-muted); font-size: 15.5px; margin-bottom: 26px; }
+
+/* A light, non-overwhelming feature strip that fills the space below the
+   Start button on desktop instead of leaving it empty, and reinforces what
+   the assessment covers before someone commits to starting. */
+.sa-welcome-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid var(--sa-border);
+  text-align: center;
+}
+.sa-welcome-feature__icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: var(--sa-blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sa-welcome-feature__icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--sa-blue);
+}
+.sa-welcome-feature__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sa-navy-dark);
+}
+.sa-welcome-meta {
+  margin-top: 22px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--sa-text-muted);
+}
+.sa-welcome-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sa-welcome-meta svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--sa-text-muted);
+  flex-shrink: 0;
+}
 
 /* Lead form */
 .sa-field { margin-bottom: 16px; }
@@ -1812,7 +1869,34 @@ window.STOCKER_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 
         <main class="sa-main sa-welcome" id="sa-main" tabindex="-1">
           <h1>How Well Are You Protected?</h1>
           <p>Answer a few quick questions about your home, auto, and business coverage. In about two minutes, you'll get personalized insights and a clear next step — no obligation.</p>
-          <button type="button" class="sa-btn sa-btn--primary" id="sa-start-btn">Start</button>
+          <button type="button" class="sa-btn sa-btn--primary" id="sa-start-btn">Start the Assessment</button>
+
+          <div class="sa-welcome-features">
+            <div class="sa-welcome-feature">
+              <div class="sa-welcome-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+              </div>
+              <div class="sa-welcome-feature__label">Home</div>
+            </div>
+            <div class="sa-welcome-feature">
+              <div class="sa-welcome-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 1 0 4 0M5 17a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M5 17l1.2-6A2 2 0 0 1 8.13 9.5h7.74a2 2 0 0 1 1.93 1.5L19 17"/></svg>
+              </div>
+              <div class="sa-welcome-feature__label">Auto</div>
+            </div>
+            <div class="sa-welcome-feature">
+              <div class="sa-welcome-feature__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <div class="sa-welcome-feature__label">Business</div>
+            </div>
+          </div>
+
+          <div class="sa-welcome-meta">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>2 minutes</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>10 quick questions</span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9c-1.3-3 1-6 4-6 2 0 3.5 1.3 5 3.5C13.5 7.3 15 6 17 6c3 0 5.3 3 4 6-2 4.5-9 9-9 9Z"/></svg>No obligation</span>
+          </div>
         </main>
       </div>
     `;
