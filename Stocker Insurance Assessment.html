@@ -1,0 +1,2077 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How Well Are You Protected? | Stocker Agency</title>
+  <meta name="description" content="A 2-minute insurance protection assessment from Stocker Agency." />
+  <style>
+/* Stocker Agency | Insurance Assessment — styles
+   --sa-navy / --sa-navy-line are taken directly from the supplied logo SVG
+   (fills #06152d and #1a3154). --sa-blue is still a placeholder accent for
+   buttons/links/progress — CONFIRM against the live site's actual accent
+   color. --sa-font is still a system-font placeholder — CONFIRM the real
+   Stocker Agency site font (see README-integration.md, this couldn't be
+   read directly from stockeragency.com). */
+
+:root {
+  --sa-navy: #06152d;       /* from logo SVG fill */
+  --sa-navy-dark: #030b18;
+  --sa-navy-line: #1a3154;  /* from logo SVG underline strokes */
+  --sa-blue: #1d6fa5;       /* CONFIRM: placeholder accent, not from the logo */
+  --sa-blue-light: #e8f1f8;
+  --sa-accent: #2e9e6b; /* used sparingly: success/strength */
+  --sa-amber: #b9781f; /* used sparingly: opportunity */
+  --sa-text: #1a2530;
+  --sa-text-muted: #56636e;
+  --sa-border: #d7dee4;
+  --sa-bg: #f6f8fa;
+  --sa-white: #ffffff;
+  --sa-danger: #b3261e;
+  --sa-focus: #1d6fa5;
+  --sa-radius: 10px;
+  /* CONFIRM: real Stocker Agency site font. Placeholder system-font stack. */
+  --sa-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --sa-max-width: 640px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--sa-bg);
+  color: var(--sa-text);
+  font-family: var(--sa-font);
+  line-height: 1.5;
+}
+
+/* Rounded corners + a floating card are the default (this is what most
+   people see — any normal desktop browser window). Only a genuinely narrow
+   phone screen goes full-bleed/edge-to-edge below. Previously this was
+   inverted (square by default, rounded only above 720px), which is why the
+   corners looked like they "weren't working" in an ordinary window. */
+.sa-app {
+  max-width: var(--sa-max-width);
+  margin: 24px auto;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: var(--sa-white);
+  box-shadow: 0 0 0 1px var(--sa-border), 0 4px 16px rgba(6, 21, 45, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .sa-app {
+    margin: 0;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* Header / progress */
+.sa-header {
+  background: var(--sa-navy);
+  color: var(--sa-white);
+  padding: 18px 20px 16px;
+}
+.sa-header__brand {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.sa-logo {
+  height: 26px;
+  width: auto;
+  display: block;
+  /* The source SVG is drawn in navy (#06152d); on a navy header we need it
+     white. brightness(0) collapses the artwork to solid black regardless of
+     its own fills, then invert(1) flips that to white — avoids having to
+     hand-edit every fill inside the SVG markup itself. */
+  filter: brightness(0) invert(1);
+}
+.sa-progress-label {
+  font-size: 12px;
+  color: #c9dcec;
+  margin-bottom: 6px;
+}
+.sa-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+.sa-progress-fill {
+  height: 100%;
+  background: var(--sa-blue);
+  transition: width 0.25s ease;
+}
+
+/* Main content */
+.sa-main {
+  flex: 1;
+  padding: 28px 20px 20px;
+}
+/* We focus() #sa-main on every screen change purely so screen readers
+   announce the new question — not for sighted keyboard users navigating
+   with Tab — so its own focus ring is suppressed. Real keyboard focus
+   (Tab-ing to an option or button) still gets a visible ring via
+   :focus-visible on those elements below. */
+.sa-main:focus {
+  outline: none;
+}
+.sa-step-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--sa-navy-dark);
+}
+.sa-step-subtext {
+  font-size: 14px;
+  color: var(--sa-text-muted);
+  margin: 0 0 18px;
+}
+
+/* Options */
+.sa-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.sa-option {
+  position: relative;
+  border: 1.5px solid var(--sa-border);
+  border-radius: var(--sa-radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  background: var(--sa-white);
+}
+.sa-option:hover { border-color: var(--sa-blue); }
+
+/* Round "bubble" indicator for both single-select (radio) and multi-select
+   (checkbox) options — deliberately not using the native square checkbox
+   look, so every answer bubble reads the same regardless of question type. */
+.sa-option input {
+  appearance: none;
+  -webkit-appearance: none;
+  margin-top: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--sa-border);
+  background: var(--sa-white);
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.sa-option input:hover { border-color: var(--sa-blue); }
+.sa-option input:checked {
+  border-color: var(--sa-blue);
+  background: var(--sa-blue);
+}
+.sa-option input:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+}
+.sa-option__label { font-size: 15px; }
+.sa-option:has(input:checked) {
+  border-color: var(--sa-blue);
+  background: var(--sa-blue-light);
+}
+.sa-option input:focus-visible {
+  outline: 3px solid var(--sa-focus);
+  outline-offset: 2px;
+}
+.sa-option:focus-within { outline: 3px solid var(--sa-focus); outline-offset: 1px; }
+
+/* Error */
+.sa-error {
+  color: var(--sa-danger);
+  font-size: 13.5px;
+  margin: -8px 0 14px;
+  display: none;
+}
+.sa-error.is-visible { display: block; }
+[aria-invalid="true"] { border-color: var(--sa-danger) !important; }
+
+/* Footer / nav controls */
+.sa-footer {
+  padding: 14px 20px 20px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--sa-border);
+}
+.sa-btn {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px 18px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sa-btn:focus-visible { outline: 3px solid var(--sa-focus); outline-offset: 2px; }
+.sa-btn--primary { background: var(--sa-blue); color: #fff; flex: 1; }
+.sa-btn--primary:hover { background: #185f8c; }
+.sa-btn--primary:disabled { background: #9fb9c9; cursor: not-allowed; }
+.sa-btn--secondary { background: var(--sa-white); color: var(--sa-navy-dark); border: 1.5px solid var(--sa-border); }
+.sa-btn--secondary:hover { background: #f0f3f5; }
+
+/* Welcome screen */
+.sa-welcome { text-align: center; padding-top: 12px; }
+.sa-welcome h1 { font-size: 26px; color: var(--sa-navy-dark); margin: 4px 0 12px; }
+.sa-welcome p { color: var(--sa-text-muted); font-size: 15.5px; margin-bottom: 26px; }
+
+/* Lead form */
+.sa-field { margin-bottom: 16px; }
+.sa-field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--sa-navy-dark); }
+.sa-field input[type="text"], .sa-field input[type="email"], .sa-field input[type="tel"] {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--sa-border); border-radius: 8px; font-size: 15px; font-family: inherit;
+}
+.sa-field input:focus-visible { outline: 3px solid var(--sa-focus); outline-offset: 1px; }
+.sa-consent { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--sa-text-muted); margin: 18px 0; }
+.sa-consent input { margin-top: 3px; accent-color: var(--sa-blue); }
+
+/* Results */
+.sa-results-card {
+  border: 1.5px solid var(--sa-border);
+  border-radius: var(--sa-radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.sa-results-card--strength { border-left: 5px solid var(--sa-accent); }
+.sa-results-card--opportunity { border-left: 5px solid var(--sa-amber); }
+.sa-results-card--next { border-left: 5px solid var(--sa-blue); background: var(--sa-blue-light); }
+.sa-results-eyebrow { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sa-text-muted); margin-bottom: 6px; }
+.sa-results-headline { font-size: 17px; font-weight: 700; margin: 0 0 6px; color: var(--sa-navy-dark); }
+.sa-results-body { font-size: 14.5px; color: var(--sa-text); margin: 0; }
+.sa-cta {
+  display: block; text-align: center; text-decoration: none;
+  background: var(--sa-blue); color: #fff; font-weight: 700; font-size: 16px;
+  padding: 15px; border-radius: 8px; margin-top: 22px;
+}
+.sa-cta:hover { background: #185f8c; }
+
+.sa-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.sa-config-error {
+  border: 1.5px solid var(--sa-danger);
+  background: #fdecea;
+  border-radius: var(--sa-radius);
+  padding: 16px;
+  font-size: 14px;
+}
+
+</style>
+</head>
+<body>
+  <!--
+    Embedding note (see README-integration.md):
+    This whole block can be dropped into a WordPress page/post via a
+    "Custom HTML" block. If a Gravity Forms submission mode is used, the
+    real GF form shortcode must also be present on the same page (it can
+    be visually hidden — see README) so this app can fill and submit it.
+  -->
+  <div style="background:#b9781f;color:#fff;font:600 13px -apple-system,sans-serif;text-align:center;padding:8px 12px;">PREVIEW BUILD — demo submission mode, no real lead is sent</div>
+  <div id="sa-app-root" aria-live="polite"></div>
+  <script>
+window.STOCKER_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 346.809 100.633" class="sa-logo" role="img" aria-label="Stocker Agency"><title>Stocker Agency</title>\n  <g id="Group_42" data-name="Group 42" transform="translate(-2293 416.148)">\n    <path id="Path_96" data-name="Path 96" d="M12.654,18.686a8.235,8.235,0,0,0-5.9,2.309,15.834,15.834,0,0,0-3.848,6.526q-.057.171-.342.142t-.285-.2q.114-.8.228-2.251t.257-3.164q.143-1.71.228-3.306t.086-2.622q0-.285.313-.285t.314.285a.861.861,0,0,0,.6.826,4.811,4.811,0,0,0,1.368.342,11.986,11.986,0,0,0,1.282.085q4.9.171,11.457.171,3.99,0,6.384-.085t4.617-.085a14.079,14.079,0,0,0,3.106-.257,1.7,1.7,0,0,0,1.34-1.169q.057-.228.371-.228t.313.228q-.114.912-.2,2.536t-.171,3.42q-.085,1.8-.143,3.306t-.057,2.251q0,.171-.285.171t-.342-.171a11.581,11.581,0,0,0-3.221-6.641A8.242,8.242,0,0,0,24.4,18.686,3.838,3.838,0,0,0,22.658,19a1.588,1.588,0,0,0-.8,1.055,8.261,8.261,0,0,0-.2,2.052V48.383A7.075,7.075,0,0,0,22,50.891a1.906,1.906,0,0,0,1.34,1.14,11.989,11.989,0,0,0,3.049.285q.171,0,.171.342T26.391,53q-1.6,0-3.591-.057t-4.389-.057q-2.28,0-4.275.057T10.488,53q-.171,0-.171-.342t.171-.342a12.041,12.041,0,0,0,3.021-.285,2,2,0,0,0,1.4-1.14,6.575,6.575,0,0,0,.37-2.508V21.992a7.617,7.617,0,0,0-.2-1.967A1.6,1.6,0,0,0,14.307,19,3.5,3.5,0,0,0,12.654,18.686Zm57.057,35a18.426,18.426,0,0,1-7.438-1.453,16.761,16.761,0,0,1-5.7-4.019,18.309,18.309,0,0,1-3.648-5.9,19.6,19.6,0,0,1-1.283-7.1A16.943,16.943,0,0,1,58.2,21.336a20.987,20.987,0,0,1,6.5-3.449,22.736,22.736,0,0,1,7.011-1.14,18.111,18.111,0,0,1,7.552,1.51,17.131,17.131,0,0,1,5.672,4.076,17.976,17.976,0,0,1,3.563,5.814,18.75,18.75,0,0,1,1.226,6.669,17.3,17.3,0,0,1-1.6,7.41,19.117,19.117,0,0,1-4.36,5.985,20.613,20.613,0,0,1-14.051,5.472Zm1.881-1.425a9.447,9.447,0,0,0,5.7-1.824,12.1,12.1,0,0,0,3.962-5.358,22.642,22.642,0,0,0,1.453-8.607,25.645,25.645,0,0,0-1.6-9.348,15.02,15.02,0,0,0-4.56-6.47,11.068,11.068,0,0,0-7.125-2.365,9.2,9.2,0,0,0-7.98,3.933q-2.793,3.933-2.793,10.887a28.708,28.708,0,0,0,.969,7.666,20.846,20.846,0,0,0,2.707,6.1,12.8,12.8,0,0,0,4.1,3.99A9.965,9.965,0,0,0,71.592,52.259Zm58.14-35.511a36.241,36.241,0,0,1,5.159.4,16.076,16.076,0,0,1,4.361,1.14,1.286,1.286,0,0,1,.684.427,2.011,2.011,0,0,1,.228.884l.684,7.923q0,.171-.257.228a.3.3,0,0,1-.37-.171,17.006,17.006,0,0,0-5.1-6.9,12.02,12.02,0,0,0-7.609-2.508,10.662,10.662,0,0,0-6.47,1.938,11.739,11.739,0,0,0-3.99,5.386,22.036,22.036,0,0,0-1.34,8.009,27.181,27.181,0,0,0,.969,7.382,20.485,20.485,0,0,0,2.736,6.042,13.647,13.647,0,0,0,4.218,4.076,10.266,10.266,0,0,0,5.415,1.482,9.931,9.931,0,0,0,6.527-2.394,20.538,20.538,0,0,0,5.158-7.41.327.327,0,0,1,.4-.171q.285.057.285.228l-.855,7.752a2.467,2.467,0,0,1-.256.883,1.666,1.666,0,0,1-.656.428,29.732,29.732,0,0,1-5.272,1.425,30.405,30.405,0,0,1-5.159.456A24.006,24.006,0,0,1,119.757,52a17.91,17.91,0,0,1-6.413-4.446,18.12,18.12,0,0,1-3.648-6.042,19.177,19.177,0,0,1-1.169-6.47,16.264,16.264,0,0,1,1.739-7.581A17.724,17.724,0,0,1,115,21.707a22.093,22.093,0,0,1,6.783-3.677A24.641,24.641,0,0,1,129.732,16.748Zm33.231,31.635V21.992a8.094,8.094,0,0,0-.285-2.48,1.8,1.8,0,0,0-1.169-1.14,8.181,8.181,0,0,0-2.593-.313q-.171,0-.171-.342t.171-.342q1.482,0,3.306.085t3.876.085q2.166,0,3.99-.085t3.249-.085q.171,0,.171.342t-.171.342a7.288,7.288,0,0,0-2.565.342,1.969,1.969,0,0,0-1.169,1.2,7.67,7.67,0,0,0-.314,2.508V48.383a8.389,8.389,0,0,0,.285,2.508,1.713,1.713,0,0,0,1.14,1.14,8.907,8.907,0,0,0,2.622.285q.228,0,.228.342t-.228.342q-1.482,0-3.277-.057t-3.962-.057q-2.052,0-3.933.057T158.8,53q-.114,0-.114-.342t.114-.342a9.216,9.216,0,0,0,2.65-.285,1.8,1.8,0,0,0,1.2-1.14A7.67,7.67,0,0,0,162.963,48.383Zm15.048-3.648L170.2,34.19l4.56-4.389,8.721,11.742q2.223,3.135,3.762,5.159t2.594,3.192a9.881,9.881,0,0,0,1.852,1.681,4,4,0,0,0,1.568.627,11.508,11.508,0,0,0,1.682.114q.171,0,.171.342T194.94,53h-6.384a22.162,22.162,0,0,0-2.223.085,3,3,0,0,1-1.4-.142,4.1,4.1,0,0,1-1.368-1.026,28.38,28.38,0,0,1-2.052-2.508ZM165.3,38.294l14.706-15.048q2.109-2.109,1.568-3.648t-3.392-1.539q-.171,0-.171-.342t.171-.342q1.539,0,3.135.085t4.218.085q2.736,0,4.332-.085t3.078-.085q.171,0,.171.342t-.171.342a13.4,13.4,0,0,0-5.757,1.51,21.406,21.406,0,0,0-5.7,4.019L166.839,38.465ZM235.182,53H209.988q-.171,0-.171-.342t.171-.342a8.907,8.907,0,0,0,2.622-.285,1.713,1.713,0,0,0,1.14-1.14,8.389,8.389,0,0,0,.285-2.508V21.992a8.094,8.094,0,0,0-.285-2.48,1.793,1.793,0,0,0-1.14-1.14,8.141,8.141,0,0,0-2.622-.313q-.171,0-.171-.342t.171-.342h24.168q.57,0,.57.513l.114,7.581q0,.114-.285.171a.353.353,0,0,1-.4-.114,8.594,8.594,0,0,0-3.078-4.931,9.506,9.506,0,0,0-5.7-1.567h-1.71a4.859,4.859,0,0,0-1.881.313,2.064,2.064,0,0,0-1.083,1,3.807,3.807,0,0,0-.342,1.71V48.155a5.106,5.106,0,0,0,.285,1.824,2.076,2.076,0,0,0,.855,1.083,2.852,2.852,0,0,0,1.482.342h1.881a12.454,12.454,0,0,0,7.125-1.824,10.5,10.5,0,0,0,3.933-5.643q.057-.171.37-.085t.313.2q-.228,1.653-.4,3.9t-.171,4.189A.756.756,0,0,1,235.182,53ZM231.99,40.289a4.361,4.361,0,0,0-1.767-3.677,8.493,8.493,0,0,0-5.187-1.34h-7.695v-1.6h7.752a9.168,9.168,0,0,0,5.1-1.168,3.63,3.63,0,0,0,1.738-3.163q0-.171.314-.171t.313.171q0,1.881-.029,2.935t-.028,2.194q0,1.425.085,2.793t.085,3.021q0,.114-.342.114T231.99,40.289ZM282.549,53q-.855,0-2.764-2.223a59,59,0,0,1-4.589-6.412q-2.679-4.19-6.042-10l5.244-1.653q4.56,7.182,7.78,11.486a32.063,32.063,0,0,0,5.729,6.213,8.017,8.017,0,0,0,4.788,1.91q.114,0,.114.342T292.7,53H282.549Zm-13-35.8q5.244,0,8.122,1.91a6.05,6.05,0,0,1,2.879,5.329,8.462,8.462,0,0,1-1.055,4.1A12.4,12.4,0,0,1,276.707,32a13.318,13.318,0,0,1-3.933,2.366,12.23,12.23,0,0,1-4.474.855h-1.625q-.826,0-1.51-.057V48.383a8.389,8.389,0,0,0,.285,2.508,1.713,1.713,0,0,0,1.14,1.14,8.907,8.907,0,0,0,2.622.285q.114,0,.114.342t-.114.342q-1.482,0-3.306-.057t-3.99-.057q-2.052,0-3.9.057T254.676,53q-.171,0-.171-.342t.171-.342a8.907,8.907,0,0,0,2.622-.285,1.793,1.793,0,0,0,1.168-1.14,7.67,7.67,0,0,0,.314-2.508V21.992a8.094,8.094,0,0,0-.285-2.48,1.793,1.793,0,0,0-1.14-1.14,8.141,8.141,0,0,0-2.622-.313q-.114,0-.114-.342t.114-.342q1.482,0,3.306.085t3.876.085q1.71,0,3.733-.171T269.553,17.2ZM274,26.609a14.869,14.869,0,0,0-.684-5.13,4.429,4.429,0,0,0-1.881-2.423A5.6,5.6,0,0,0,268.7,18.4a4.857,4.857,0,0,0-2.081.37,2.217,2.217,0,0,0-1.111,1.2,5.654,5.654,0,0,0-.342,2.137v11.4q.8.114,1.71.171t1.6.057q3.021,0,4.275-1.482T274,26.609Z" transform="translate(2347 -409)" fill="#06152d"/>\n    <path id="Path_97" data-name="Path 97" d="M57.449,21.894a3.827,3.827,0,0,0,.13,1.144.781.781,0,0,0,.52.52,4.063,4.063,0,0,0,1.2.13q.078,0,.078.156T59.3,24q-.7,0-1.521-.026t-1.807-.026q-.962,0-1.794.026T52.639,24q-.052,0-.052-.156t.078-.156a4.083,4.083,0,0,0,1.183-.13.819.819,0,0,0,.546-.52,3.5,3.5,0,0,0,.143-1.144V9.856a3.692,3.692,0,0,0-.13-1.131.82.82,0,0,0-.546-.52,3.972,3.972,0,0,0-1.222-.143q-.052,0-.052-.156t.052-.156q.7,0,1.534.039t1.794.039q.988,0,1.82-.039T59.3,7.75q.078,0,.078.156t-.078.156a3.424,3.424,0,0,0-1.2.156.857.857,0,0,0-.52.546,3.827,3.827,0,0,0-.13,1.144Zm13.494-1.2V8.348l.78.052V20.7a3.709,3.709,0,0,0,.572,2.184,1.837,1.837,0,0,0,1.586.806q.052,0,.052.156T73.881,24q-.572,0-1.183-.026t-1.339-.026q-.78,0-1.521.026T68.473,24q-.078,0-.078-.156t.078-.156a2.215,2.215,0,0,0,1.807-.806A3.335,3.335,0,0,0,70.943,20.7ZM84.2,24.39q0,.078-.117.091a.322.322,0,0,1-.169-.013L71.1,9.882a7.11,7.11,0,0,0-1.586-1.443,2.572,2.572,0,0,0-1.3-.377q-.052,0-.052-.156t.052-.156q.52,0,1.066.026t1.014.026q.936,0,1.69-.026t1.17-.026a.547.547,0,0,1,.507.3A9.129,9.129,0,0,0,74.453,9.1L84,20.1Zm0-13.312V24.39l-.754-.78V11.078a3.771,3.771,0,0,0-.572-2.2,1.828,1.828,0,0,0-1.586-.819q-.052,0-.052-.156t.052-.156q.572,0,1.183.039t1.339.039q.7,0,1.378-.039t1.248-.039q.052,0,.052.156t-.052.156a1.919,1.919,0,0,0-1.638.819A3.648,3.648,0,0,0,84.2,11.078Zm14.274-.7a2.987,2.987,0,0,0,.507,1.729,5.544,5.544,0,0,0,1.326,1.339q.819.6,1.729,1.2.988.624,1.885,1.313a6.413,6.413,0,0,1,1.482,1.586,3.839,3.839,0,0,1,.585,2.145,4.059,4.059,0,0,1-.741,2.418,4.964,4.964,0,0,1-2,1.625,6.752,6.752,0,0,1-2.873.585,8.952,8.952,0,0,1-1.625-.156,10.98,10.98,0,0,1-1.534-.39,3.231,3.231,0,0,1-1-.494,1.136,1.136,0,0,1-.182-.169.509.509,0,0,1-.078-.325l-.078-4.134q-.026-.13.117-.143t.169.091q.39.806.858,1.7a10.942,10.942,0,0,0,1.053,1.651,5.507,5.507,0,0,0,1.313,1.235,2.95,2.95,0,0,0,1.664.481,3.186,3.186,0,0,0,1.144-.208,1.834,1.834,0,0,0,.9-.754,2.773,2.773,0,0,0,.351-1.508A3.861,3.861,0,0,0,102.9,19.1a5.88,5.88,0,0,0-1.4-1.534Q100.635,16.9,99.7,16.3q-.91-.6-1.742-1.235a5.642,5.642,0,0,1-1.352-1.456,3.586,3.586,0,0,1-.52-1.963A3.451,3.451,0,0,1,96.9,9.271a4.879,4.879,0,0,1,2.08-1.365,7.692,7.692,0,0,1,2.561-.442,10.516,10.516,0,0,1,1.872.169,7.069,7.069,0,0,1,1.482.4.593.593,0,0,1,.325.234.631.631,0,0,1,.065.286v3.822q0,.078-.117.117a.132.132,0,0,1-.169-.039q-.156-.312-.442-1.027a10.52,10.52,0,0,0-.754-1.495,4.767,4.767,0,0,0-1.2-1.339,2.817,2.817,0,0,0-1.768-.559,2.662,2.662,0,0,0-1.183.26,2.092,2.092,0,0,0-.858.767A2.4,2.4,0,0,0,98.477,10.376Zm30.914.7a3.485,3.485,0,0,0-.637-2.2,2.128,2.128,0,0,0-1.781-.819q-.052,0-.052-.156t.052-.156q.65,0,1.339.039t1.495.039q.7,0,1.378-.039t1.248-.039q.052,0,.052.156t-.052.156a1.82,1.82,0,0,0-1.6.819,3.838,3.838,0,0,0-.559,2.2v7.228a6.2,6.2,0,0,1-.806,3.211,5.421,5.421,0,0,1-2.262,2.106,7.415,7.415,0,0,1-3.406.741,7.652,7.652,0,0,1-3.393-.728,5.54,5.54,0,0,1-2.34-2.093,6.128,6.128,0,0,1-.845-3.289v-8.4a3.692,3.692,0,0,0-.13-1.131.819.819,0,0,0-.533-.52,3.732,3.732,0,0,0-1.183-.143q-.078,0-.078-.156t.078-.156q.676,0,1.508.039t1.768.039q.988,0,1.82-.039t1.482-.039q.078,0,.078.156t-.078.156a3.325,3.325,0,0,0-1.17.156.9.9,0,0,0-.533.546,3.5,3.5,0,0,0-.143,1.144v7.436q0,3.2,1.274,4.628a4.336,4.336,0,0,0,3.406,1.43,4.39,4.39,0,0,0,3.38-1.313,5.313,5.313,0,0,0,1.222-3.757ZM153.8,24q-.39,0-1.261-1.014a26.914,26.914,0,0,1-2.093-2.925q-1.222-1.911-2.756-4.563l2.392-.754q2.08,3.276,3.549,5.239a14.625,14.625,0,0,0,2.613,2.834,3.657,3.657,0,0,0,2.184.871q.052,0,.052.156t-.052.156H153.8ZM147.877,7.672a6.673,6.673,0,0,1,3.705.871,2.76,2.76,0,0,1,1.313,2.431,3.86,3.86,0,0,1-.481,1.872,5.655,5.655,0,0,1-1.274,1.573,6.075,6.075,0,0,1-1.794,1.079,5.578,5.578,0,0,1-2.041.39h-.741q-.377,0-.689-.026v6.032a3.827,3.827,0,0,0,.13,1.144.781.781,0,0,0,.52.52,4.063,4.063,0,0,0,1.2.13q.052,0,.052.156t-.052.156q-.676,0-1.508-.026t-1.82-.026q-.936,0-1.781.026T141.091,24q-.078,0-.078-.156t.078-.156a4.063,4.063,0,0,0,1.2-.13.818.818,0,0,0,.533-.52,3.5,3.5,0,0,0,.143-1.144V9.856a3.692,3.692,0,0,0-.13-1.131.818.818,0,0,0-.52-.52,3.713,3.713,0,0,0-1.2-.143q-.052,0-.052-.156t.052-.156q.676,0,1.508.039t1.768.039q.78,0,1.7-.078T147.877,7.672Zm2.028,4.29a6.782,6.782,0,0,0-.312-2.34,2.02,2.02,0,0,0-.858-1.105,2.556,2.556,0,0,0-1.248-.3,2.215,2.215,0,0,0-.949.169,1.011,1.011,0,0,0-.507.546,2.579,2.579,0,0,0-.156.975v5.2q.364.052.78.078t.728.026a2.435,2.435,0,0,0,1.95-.676A4.16,4.16,0,0,0,149.9,11.962Zm21.138,4.264.39-.728h5.356l.182.728Zm12.974,7.462q.13,0,.13.156t-.13.156q-.78,0-1.625-.052t-1.625-.052q-.884,0-1.534.052T177.777,24q-.1,0-.1-.156t.1-.156q1.066,0,1.235-.429t-.481-1.7L173.253,11.13l1.274-2.236-5.174,11.414a2.362,2.362,0,0,0-.026,2.47,2.481,2.481,0,0,0,2.132.91q.13,0,.13.156t-.13.156q-.78,0-1.43-.052t-1.638-.052q-1.014,0-1.625.052t-1.5.052q-.1,0-.1-.156t.1-.156a2.338,2.338,0,0,0,1.209-.3,3.3,3.3,0,0,0,1.014-1.092,17.877,17.877,0,0,0,1.157-2.249l5.642-12.4q.026-.078.234-.091t.234.091l6.5,12.792q.624,1.222,1.079,1.937a3.814,3.814,0,0,0,.858,1.014A1.364,1.364,0,0,0,184.017,23.688Zm10.478-2.99V8.348l.78.052V20.7a3.709,3.709,0,0,0,.572,2.184,1.837,1.837,0,0,0,1.586.806q.052,0,.052.156t-.052.156q-.572,0-1.183-.026t-1.339-.026q-.78,0-1.521.026T192.025,24q-.078,0-.078-.156t.078-.156a2.215,2.215,0,0,0,1.807-.806A3.335,3.335,0,0,0,194.495,20.7Zm13.26,3.692q0,.078-.117.091a.322.322,0,0,1-.169-.013L194.651,9.882a7.11,7.11,0,0,0-1.586-1.443,2.572,2.572,0,0,0-1.3-.377q-.052,0-.052-.156t.052-.156q.52,0,1.066.026t1.014.026q.936,0,1.69-.026t1.17-.026a.547.547,0,0,1,.507.3A9.129,9.129,0,0,0,198,9.1l9.542,11Zm0-13.312V24.39L207,23.61V11.078a3.771,3.771,0,0,0-.572-2.2,1.828,1.828,0,0,0-1.586-.819q-.052,0-.052-.156t.052-.156q.572,0,1.183.039t1.339.039q.7,0,1.378-.039t1.248-.039q.052,0,.052.156t-.052.156a1.919,1.919,0,0,0-1.638.819A3.648,3.648,0,0,0,207.755,11.078Zm20.7-3.614a16.531,16.531,0,0,1,2.353.182,7.333,7.333,0,0,1,1.989.52.586.586,0,0,1,.312.195.917.917,0,0,1,.1.4l.312,3.614q0,.078-.117.1a.137.137,0,0,1-.169-.078,7.757,7.757,0,0,0-2.327-3.146,5.483,5.483,0,0,0-3.471-1.144A4.863,4.863,0,0,0,224.486,9a5.355,5.355,0,0,0-1.82,2.457,10.052,10.052,0,0,0-.611,3.653,12.4,12.4,0,0,0,.442,3.367,9.344,9.344,0,0,0,1.248,2.756,6.225,6.225,0,0,0,1.924,1.859,4.683,4.683,0,0,0,2.47.676,4.53,4.53,0,0,0,2.977-1.092,9.368,9.368,0,0,0,2.353-3.38.149.149,0,0,1,.182-.078q.13.026.13.1l-.39,3.536a1.125,1.125,0,0,1-.117.4.76.76,0,0,1-.3.195,13.562,13.562,0,0,1-2.4.65,13.869,13.869,0,0,1-2.353.208,10.95,10.95,0,0,1-4.316-.767,8.169,8.169,0,0,1-2.925-2.028,8.265,8.265,0,0,1-1.664-2.756,8.748,8.748,0,0,1-.533-2.951,7.419,7.419,0,0,1,.793-3.458,8.085,8.085,0,0,1,2.158-2.626,10.077,10.077,0,0,1,3.094-1.677A11.24,11.24,0,0,1,228.451,7.464ZM254.659,24H243.167q-.078,0-.078-.156t.078-.156a4.063,4.063,0,0,0,1.2-.13.781.781,0,0,0,.52-.52,3.827,3.827,0,0,0,.13-1.144V9.856a3.692,3.692,0,0,0-.13-1.131.818.818,0,0,0-.52-.52,3.713,3.713,0,0,0-1.2-.143q-.078,0-.078-.156t.078-.156h11.024q.26,0,.26.234l.052,3.458q0,.052-.13.078a.161.161,0,0,1-.182-.052,3.92,3.92,0,0,0-1.4-2.249,4.336,4.336,0,0,0-2.6-.715h-.78a2.217,2.217,0,0,0-.858.143.942.942,0,0,0-.494.455,1.737,1.737,0,0,0-.156.78V21.79a2.329,2.329,0,0,0,.13.832.947.947,0,0,0,.39.494,1.3,1.3,0,0,0,.676.156h.858a5.681,5.681,0,0,0,3.25-.832A4.788,4.788,0,0,0,255,19.866q.026-.078.169-.039t.143.091q-.1.754-.182,1.781t-.078,1.911A.345.345,0,0,1,254.659,24ZM253.2,18.2a1.989,1.989,0,0,0-.806-1.677,3.874,3.874,0,0,0-2.366-.611h-3.51v-.728h3.536a4.182,4.182,0,0,0,2.327-.533,1.656,1.656,0,0,0,.793-1.443q0-.078.143-.078t.143.078q0,.858-.013,1.339t-.013,1q0,.65.039,1.274t.039,1.378q0,.052-.156.052T253.2,18.2Z" transform="translate(2313 -340)" fill="#06152d"/>\n    <path id="Path_95" data-name="Path 95" d="M53.734,37.268a10.684,10.684,0,0,0,1.813,6.185,19.83,19.83,0,0,0,4.743,4.789q2.929,2.139,6.185,4.278,3.534,2.232,6.743,4.7a22.937,22.937,0,0,1,5.3,5.673,13.733,13.733,0,0,1,2.092,7.672,14.52,14.52,0,0,1-2.65,8.649A17.757,17.757,0,0,1,70.8,85.023a24.153,24.153,0,0,1-10.277,2.092,32.019,32.019,0,0,1-5.812-.558,39.275,39.275,0,0,1-5.487-1.395A11.557,11.557,0,0,1,45.643,83.4a4.063,4.063,0,0,1-.651-.6,1.821,1.821,0,0,1-.279-1.162l-.279-14.787q-.093-.465.418-.511t.6.326q1.4,2.883,3.069,6.091a39.138,39.138,0,0,0,3.767,5.906,19.7,19.7,0,0,0,4.7,4.418,10.551,10.551,0,0,0,5.952,1.72,11.4,11.4,0,0,0,4.092-.744,6.558,6.558,0,0,0,3.208-2.7A9.92,9.92,0,0,0,71.5,75.956a13.811,13.811,0,0,0-1.953-7.487,21.031,21.031,0,0,0-5.022-5.487q-3.069-2.372-6.417-4.51-3.255-2.139-6.231-4.418a20.181,20.181,0,0,1-4.836-5.208,12.826,12.826,0,0,1-1.86-7.022,12.343,12.343,0,0,1,2.93-8.509,17.453,17.453,0,0,1,7.44-4.882,27.514,27.514,0,0,1,9.16-1.581,37.614,37.614,0,0,1,6.7.6,25.284,25.284,0,0,1,5.3,1.442,2.121,2.121,0,0,1,1.162.837,2.255,2.255,0,0,1,.232,1.023V44.429q0,.279-.418.418a.472.472,0,0,1-.6-.139q-.558-1.116-1.581-3.674a37.628,37.628,0,0,0-2.7-5.347,17.052,17.052,0,0,0-4.278-4.79,10.076,10.076,0,0,0-6.324-2,9.522,9.522,0,0,0-4.232.93A7.483,7.483,0,0,0,54.9,32.571,8.571,8.571,0,0,0,53.734,37.268Z" transform="translate(2251 -443)" fill="#06152d"/>\n    <g id="Group_41" data-name="Group 41" transform="translate(2209 -626)">\n      <path id="Line_1" data-name="Line 1" d="M54,.5H0v-1H54Z" transform="translate(376.5 301.5)" fill="#1a3154"/>\n      <path id="Line_2" data-name="Line 2" d="M54,.5H0v-1H54Z" transform="translate(84 301.5)" fill="#1a3154"/>\n    </g>\n  </g>\n</svg>\n';
+
+
+/**
+ * Stocker Agency | Insurance Assessment
+ * Question configuration, routing engine, and results (insight) engine.
+ *
+ * Source of truth: Stocker_Agency_Complete_Development_Directive.docx
+ * Every question ID, label, and rule below traces to that document's Appendix A
+ * and Sections 3-6. Where the directive left a value open for client
+ * confirmation, it is marked  CONFIRM:  in a comment — do not treat these as
+ * final for launch.
+ *
+ * This file has no DOM dependency. It is pure data + pure functions so it can
+ * be unit tested in isolation (Section 9 requirement).
+ */
+
+(function (root) {
+  "use strict";
+
+  const ASSESSMENT_VERSION = "2026-09-stocker-v1";
+
+  // ---------------------------------------------------------------------
+  // 1. UNIVERSAL QUESTIONS (Q1-Q4, Q9-Q10)
+  // ---------------------------------------------------------------------
+
+  const Q1 = {
+    id: "Q1",
+    category: "universal",
+    text: "What would you most like to protect?",
+    subtext: "Select all that apply.",
+    type: "multi-select",
+    options: [
+      { id: "q1_home", label: "My home", propertyType: "home" },
+      { id: "q1_condo", label: "My condo or townhome", propertyType: "condo" },
+      { id: "q1_renter", label: "My rental home or apartment", propertyType: "renter" },
+      { id: "q1_vehicles", label: "My vehicles" },
+      { id: "q1_business", label: "My business" },
+      { id: "q1_all", label: "I'd like to review all my insurance", exclusive: true },
+    ],
+  };
+
+  const Q2 = {
+    id: "Q2",
+    category: "universal",
+    text: "If you experienced a major loss tomorrow, how confident are you that your insurance would cover what you need?",
+    type: "single-select",
+    options: [
+      { id: "q2_very", label: "Very confident", tier: "strength" },
+      { id: "q2_somewhat", label: "Somewhat confident", tier: "neutral" },
+      { id: "q2_not_very", label: "Not very confident", tier: "opportunity" },
+      { id: "q2_not_at_all", label: "Not confident at all", tier: "opportunity" },
+      { id: "q2_not_sure", label: "I'm not sure", tier: "opportunity" },
+    ],
+  };
+
+  const Q3 = {
+    id: "Q3",
+    category: "universal",
+    text: "When was the last time someone reviewed your insurance to make sure it still fits your needs?",
+    type: "single-select",
+    options: [
+      { id: "q3_last_year", label: "Within the last year", tier: "strength" },
+      { id: "q3_1_2_years", label: "1–2 years ago", tier: "neutral" },
+      { id: "q3_2plus_years", label: "More than 2 years ago", tier: "opportunity" },
+      { id: "q3_premium_only", label: "I only review it when my premium changes", tier: "opportunity" },
+      { id: "q3_cant_remember", label: "I can't remember", tier: "opportunity" },
+    ],
+  };
+
+  const Q4 = {
+    id: "Q4",
+    category: "universal",
+    text: "Have any of these changes happened since your last insurance review?",
+    subtext: "Select all that apply.",
+    type: "multi-select",
+    options: [
+      { id: "q4_home_change", label: "Purchased or renovated a home, condo, or townhome", changeCategory: "property" },
+      { id: "q4_moved_rental", label: "Moved into a new rental", changeCategory: "property" },
+      { id: "q4_vehicle", label: "Purchased a vehicle", changeCategory: "auto" },
+      { id: "q4_business", label: "Started or expanded a business", changeCategory: "business" },
+      { id: "q4_income", label: "Experienced a significant income change", changeCategory: null },
+      { id: "q4_none", label: "None of the above", exclusive: true },
+    ],
+  };
+
+  const Q9 = {
+    id: "Q9",
+    category: "universal",
+    text: "How would you describe your relationship with your current insurance agent?",
+    type: "single-select",
+    options: [
+      { id: "q9_proactive", label: "They proactively review my coverage and make recommendations" },
+      { id: "q9_helpful", label: "They're helpful when I reach out" },
+      { id: "q9_rarely", label: "I rarely hear from them" },
+      { id: "q9_direct", label: "I purchase insurance directly without an agent" },
+      { id: "q9_unsatisfied", label: "I'm not satisfied with my current experience" },
+    ],
+  };
+
+  const Q10 = {
+    id: "Q10",
+    category: "universal",
+    text: "What would make reviewing your insurance most valuable to you right now?",
+    type: "single-select",
+    options: [
+      { id: "q10_gaps", label: "Finding potential gaps in my coverage", motivation: "gaps" },
+      { id: "q10_cost", label: "Making sure I'm not paying more than necessary", motivation: "cost" },
+      { id: "q10_understand", label: "Understanding what my policies actually cover", motivation: "understand" },
+      { id: "q10_proactive_agent", label: "Having an agent who proactively looks out for me", motivation: "proactive_agent" },
+      { id: "q10_simplify", label: "Simplifying my insurance by working with one agency", motivation: "simplify" },
+      { id: "q10_curious", label: "I'm simply curious about how well I'm protected", motivation: "curious" },
+    ],
+  };
+
+  // ---------------------------------------------------------------------
+  // 2. DYNAMIC QUESTION BANKS (H, C, R, A, B, F)
+  // Each option carries a `tier` (strength / neutral / opportunity) used by
+  // the results engine, except the 4th "which concern matters most" question
+  // in each bank, which is preference-only (no tier) and instead carries a
+  // `focus` tag used to help choose which opportunity/next-step to surface.
+  // ---------------------------------------------------------------------
+
+  const BANKS = {
+    property_home: [
+      {
+        id: "H1",
+        category: "property_home",
+        topic: "rebuild_cost",
+        text: "If your home suffered major damage, do you know whether your insurance would cover the full cost of rebuilding it?",
+        type: "single-select",
+        options: [
+          { id: "h1_yes", label: "Yes, I've reviewed my coverage recently", tier: "strength" },
+          { id: "h1_believe", label: "I believe so, but I'm not certain", tier: "neutral" },
+          { id: "h1_concerned", label: "I'm concerned I may not have enough coverage", tier: "opportunity" },
+          { id: "h1_dont_know", label: "I don't know", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "H2",
+        category: "property_home",
+        topic: "roof",
+        text: "Do you know how your homeowners policy would handle damage to your roof?",
+        type: "single-select",
+        options: [
+          { id: "h2_yes", label: "Yes, I've reviewed how roof claims are covered", tier: "strength" },
+          { id: "h2_general", label: "I have a general idea", tier: "neutral" },
+          { id: "h2_changed", label: "I know coverage may have changed, but I'm not sure how it affects me", tier: "opportunity" },
+          { id: "h2_dont_know", label: "I don't know", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "H3",
+        category: "property_home",
+        topic: "liability",
+        text: "If a guest were seriously injured on your property, do you know how much liability protection you have?",
+        type: "single-select",
+        options: [
+          { id: "h3_yes", label: "Yes, I've reviewed my limits", tier: "strength" },
+          { id: "h3_general", label: "I have a general idea", tier: "neutral" },
+          { id: "h3_dont_know", label: "I don't know my limits", tier: "opportunity" },
+          { id: "h3_what_covers", label: "I'm not sure what liability insurance covers", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "H4",
+        category: "property_home",
+        topic: "focus_preference",
+        text: "Which home insurance concern matters most to you?",
+        type: "single-select",
+        options: [
+          { id: "h4_rebuild", label: "Having enough coverage to rebuild", focus: "rebuild_cost" },
+          { id: "h4_roof", label: "Understanding how roof damage is covered", focus: "roof" },
+          { id: "h4_exclusions", label: "Understanding exclusions and deductibles", focus: "understand" },
+          { id: "h4_costs", label: "Managing rising insurance costs", focus: "cost" },
+          { id: "h4_current", label: "Keeping my coverage current", focus: "review_recency" },
+        ],
+      },
+    ],
+
+    property_condo: [
+      {
+        id: "C1",
+        category: "property_condo",
+        topic: "association_split",
+        text: "Do you know which parts of your condo or townhome are covered by your own policy versus an association policy?",
+        type: "single-select",
+        options: [
+          { id: "c1_yes", label: "Yes, I've reviewed both", tier: "strength" },
+          { id: "c1_general", label: "I have a general idea", tier: "neutral" },
+          { id: "c1_not_sure", label: "I'm not sure", tier: "opportunity" },
+          { id: "c1_no_association", label: "There is no association policy / it doesn't apply", tier: "neutral" },
+        ],
+      },
+      {
+        id: "C2",
+        category: "property_condo",
+        topic: "unit_damage",
+        text: "If your unit suffered major damage, how confident are you that your policy would cover the parts you're responsible for?",
+        type: "single-select",
+        options: [
+          { id: "c2_very", label: "Very confident", tier: "strength" },
+          { id: "c2_somewhat", label: "Somewhat confident", tier: "neutral" },
+          { id: "c2_not_very", label: "Not very confident", tier: "opportunity" },
+          { id: "c2_not_sure", label: "I'm not sure", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "C3",
+        category: "property_condo",
+        topic: "roof",
+        text: "Do you know how roof damage would be handled for your condo or townhome?",
+        type: "single-select",
+        options: [
+          { id: "c3_yes", label: "Yes, I understand who is responsible and how it's covered", tier: "strength" },
+          { id: "c3_general", label: "I have a general idea", tier: "neutral" },
+          { id: "c3_not_sure", label: "I'm not sure whether my policy or an association policy applies", tier: "opportunity" },
+          { id: "c3_no_association", label: "There is no association / it doesn't apply", tier: "neutral" },
+        ],
+      },
+      {
+        id: "C4",
+        category: "property_condo",
+        topic: "focus_preference",
+        text: "What would you most like to clarify about your condo or townhome coverage?",
+        type: "single-select",
+        options: [
+          { id: "c4_split", label: "What my policy covers versus an association policy", focus: "association_split" },
+          { id: "c4_improvements", label: "Coverage for improvements inside my unit", focus: "understand" },
+          { id: "c4_deductibles", label: "Deductibles and out-of-pocket costs", focus: "cost" },
+          { id: "c4_liability", label: "Liability protection", focus: "liability" },
+          { id: "c4_current", label: "Keeping coverage current", focus: "review_recency" },
+        ],
+      },
+    ],
+
+    property_renter: [
+      {
+        id: "R1",
+        category: "property_renter",
+        topic: "belongings",
+        text: "If a fire or theft damaged your belongings, how confident are you that your renters insurance would help replace them?",
+        type: "single-select",
+        options: [
+          { id: "r1_very", label: "Very confident", tier: "strength" },
+          { id: "r1_somewhat", label: "Somewhat confident", tier: "neutral" },
+          { id: "r1_not_very", label: "Not very confident", tier: "opportunity" },
+          { id: "r1_no_policy", label: "I don't currently have renters insurance", tier: "opportunity" },
+          { id: "r1_not_sure", label: "I'm not sure", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "R2",
+        category: "property_renter",
+        topic: "additional_living_expense",
+        text: "If your rental became temporarily unlivable after a covered loss, do you know whether your policy could help with additional living expenses?",
+        type: "single-select",
+        options: [
+          { id: "r2_yes", label: "Yes, I've reviewed that coverage", tier: "strength" },
+          { id: "r2_general", label: "I have a general idea", tier: "neutral" },
+          { id: "r2_dont_know", label: "I don't know", tier: "opportunity" },
+          { id: "r2_no_policy", label: "I don't currently have renters insurance", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "R3",
+        category: "property_renter",
+        topic: "liability",
+        text: "If someone were injured in your rental and you were held responsible, do you know what liability coverage you have?",
+        type: "single-select",
+        options: [
+          { id: "r3_yes", label: "Yes, I've reviewed my limits", tier: "strength" },
+          { id: "r3_general", label: "I have a general idea", tier: "neutral" },
+          { id: "r3_dont_know", label: "I don't know my limits", tier: "opportunity" },
+          { id: "r3_no_policy", label: "I don't currently have renters insurance", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "R4",
+        category: "property_renter",
+        topic: "focus_preference",
+        text: "What is your biggest question about renters insurance?",
+        type: "single-select",
+        options: [
+          { id: "r4_belongings", label: "Protecting my belongings", focus: "belongings" },
+          { id: "r4_housing", label: "Temporary housing after a covered loss", focus: "additional_living_expense" },
+          { id: "r4_liability", label: "Liability coverage", focus: "liability" },
+          { id: "r4_costs", label: "Deductibles and costs", focus: "cost" },
+          { id: "r4_right_coverage", label: "Whether I have the right coverage", focus: "understand" },
+        ],
+      },
+    ],
+
+    auto: [
+      {
+        id: "A1",
+        category: "auto",
+        topic: "vehicle_valuation",
+        text: "If your vehicle were totaled tomorrow, do you know how your insurance would determine what you're paid?",
+        type: "single-select",
+        options: [
+          { id: "a1_yes", label: "Yes, I understand how it works", tier: "strength" },
+          { id: "a1_general", label: "I have a general idea", tier: "neutral" },
+          { id: "a1_not_sure", label: "I'm not sure", tier: "opportunity" },
+          { id: "a1_dont_know", label: "I don't know what my policy covers", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "A2",
+        category: "auto",
+        topic: "auto_liability",
+        text: "If you caused a serious accident, how confident are you that your liability limits would protect your finances?",
+        type: "single-select",
+        options: [
+          { id: "a2_very", label: "Very confident", tier: "strength" },
+          { id: "a2_somewhat", label: "Somewhat confident", tier: "neutral" },
+          { id: "a2_not_very", label: "Not very confident", tier: "opportunity" },
+          { id: "a2_dont_know", label: "I don't know my liability limits", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "A3",
+        category: "auto",
+        topic: "deductibles",
+        text: "How well do you understand what you would pay out of pocket after an accident?",
+        type: "single-select",
+        options: [
+          { id: "a3_know", label: "I know my deductibles and coverage", tier: "strength" },
+          { id: "a3_general", label: "I have a general idea", tier: "neutral" },
+          { id: "a3_not_sure", label: "I'm not sure", tier: "opportunity" },
+          { id: "a3_not_reviewed", label: "I haven't reviewed them recently", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "A4",
+        category: "auto",
+        topic: "focus_preference",
+        text: "What is your biggest concern about your auto insurance?",
+        type: "single-select",
+        options: [
+          { id: "a4_premiums", label: "Rising premiums", focus: "cost" },
+          { id: "a4_not_enough", label: "Not having enough coverage", focus: "auto_liability" },
+          { id: "a4_out_of_pocket", label: "Paying too much out of pocket after a claim", focus: "deductibles" },
+          { id: "a4_understand", label: "Understanding what's covered", focus: "understand" },
+          { id: "a4_help", label: "Getting help when I need it", focus: "agent_support" },
+        ],
+      },
+    ],
+
+    business: [
+      {
+        id: "B1",
+        category: "business",
+        topic: "business_interruption",
+        text: "If an unexpected event forced your business to temporarily close, how prepared would you be to handle the financial impact?",
+        type: "single-select",
+        options: [
+          { id: "b1_very", label: "Very prepared", tier: "strength" },
+          { id: "b1_somewhat", label: "Somewhat prepared", tier: "neutral" },
+          { id: "b1_not_very", label: "Not very prepared", tier: "opportunity" },
+          { id: "b1_dont_know", label: "I don't know whether my insurance would help", tier: "opportunity" },
+          { id: "b1_not_owner", label: "I don't currently own a business", tier: "not_applicable" },
+        ],
+      },
+      {
+        id: "B2",
+        category: "business",
+        topic: "liability_claim",
+        text: "If a customer or third party filed a major liability claim against your business, how confident are you in your coverage?",
+        type: "single-select",
+        options: [
+          { id: "b2_very", label: "Very confident", tier: "strength" },
+          { id: "b2_somewhat", label: "Somewhat confident", tier: "neutral" },
+          { id: "b2_not_very", label: "Not very confident", tier: "opportunity" },
+          { id: "b2_dont_know_limits", label: "I don't know my coverage limits", tier: "opportunity" },
+          { id: "b2_not_sure_covers", label: "I'm not sure what my policy covers", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "B3",
+        category: "business",
+        topic: "business_change_review",
+        text: "Has your business changed significantly since your last insurance review?",
+        type: "single-select",
+        options: [
+          { id: "b3_yes_updated", label: "Yes, and I've updated my coverage", tier: "strength" },
+          { id: "b3_yes_not_reviewed", label: "Yes, but I haven't reviewed my coverage", tier: "opportunity" },
+          { id: "b3_no_change", label: "No significant changes", tier: "neutral" },
+          { id: "b3_not_sure", label: "I'm not sure when we last reviewed it", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "B4",
+        category: "business",
+        topic: "focus_preference",
+        text: "Which business risk concerns you most?",
+        type: "single-select",
+        options: [
+          { id: "b4_property", label: "Property damage or equipment loss", focus: "business_interruption" },
+          { id: "b4_liability", label: "Customer or third-party liability claims", focus: "liability_claim" },
+          { id: "b4_employee", label: "Employee injuries", focus: "liability_claim" },
+          { id: "b4_interruption", label: "Business interruption", focus: "business_interruption" },
+          { id: "b4_commercial_vehicle", label: "Commercial vehicle accidents", focus: "liability_claim" },
+          { id: "b4_not_sure", label: "I'm not sure", focus: "understand" },
+        ],
+      },
+    ],
+
+    fallback: [
+      {
+        id: "F1",
+        category: "fallback",
+        topic: "focus_preference",
+        text: "Which area of your insurance would you most like to understand better?",
+        type: "single-select",
+        options: [
+          { id: "f1_covers", label: "What my policies cover", focus: "understand" },
+          { id: "f1_limits", label: "My coverage limits", focus: "understand" },
+          { id: "f1_deductibles", label: "My deductibles", focus: "cost" },
+          { id: "f1_paying_more", label: "Whether I'm paying more than necessary", focus: "cost" },
+          { id: "f1_work_together", label: "How my policies work together", focus: "simplify" },
+        ],
+      },
+      {
+        id: "F2",
+        category: "fallback",
+        topic: "keeping_current",
+        text: "How confident are you that your insurance has kept up with changes in your life?",
+        type: "single-select",
+        options: [
+          { id: "f2_very", label: "Very confident", tier: "strength" },
+          { id: "f2_somewhat", label: "Somewhat confident", tier: "neutral" },
+          { id: "f2_not_very", label: "Not very confident", tier: "opportunity" },
+          { id: "f2_not_sure", label: "I'm not sure", tier: "opportunity" },
+        ],
+      },
+      {
+        id: "F3",
+        category: "fallback",
+        topic: "agent_support",
+        text: "How easy is it for you to get answers about your insurance when you need them?",
+        type: "single-select",
+        options: [
+          { id: "f3_very_easy", label: "Very easy", tier: "strength" },
+          { id: "f3_somewhat_easy", label: "Somewhat easy", tier: "neutral" },
+          { id: "f3_difficult", label: "Difficult", tier: "opportunity" },
+          { id: "f3_havent_needed", label: "I haven't needed to ask", tier: "neutral" },
+          { id: "f3_no_agent", label: "I don't have an agent", tier: "opportunity" },
+        ],
+      },
+    ],
+  };
+
+  // Approved bank order per Section 4 ("Within banks use approved order")
+  const BANK_ORDER = {
+    property_home: ["H1", "H2", "H3", "H4"],
+    property_condo: ["C1", "C2", "C3", "C4"],
+    property_renter: ["R1", "R2", "R3", "R4"],
+    auto: ["A1", "A2", "A3", "A4"],
+    business: ["B1", "B2", "B3", "B4"],
+    fallback: ["F1", "F2", "F3"],
+  };
+
+  function questionById(id) {
+    for (const bankKey of Object.keys(BANKS)) {
+      const found = BANKS[bankKey].find((q) => q.id === id);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  root.StockerAssessmentConfig = {
+    ASSESSMENT_VERSION,
+    Q1, Q2, Q3, Q4, Q9, Q10,
+    BANKS,
+    BANK_ORDER,
+    questionById,
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+/**
+ * Stocker Agency | Insurance Assessment — Insight (results) library
+ *
+ * Implements Section 6 of the directive: a rule-based library, no numeric
+ * score, no "you are underinsured" claims. Every headline/body below is
+ * grounded in a specific answer the visitor gave. Copy follows the sample
+ * tone in the directive: "You mentioned you're unsure how your policy
+ * handles roof damage. It may be worth reviewing the roof provisions with
+ * an agent."
+ *
+ *  CONFIRM WITH CLIENT (Section 11):
+ *   - Whether coverage reviews are free (copy below avoids the word "free").
+ *   - The scheduling URL (placeholder token {{SCHEDULING_URL}} used
+ *     throughout — must be replaced before launch, never hardcoded here).
+ *   - Final wording of the condo/roof questions (already reflected in
+ *     assessment-config.js from the "revised" appendix, but re-confirm).
+ *
+ * This is DRAFT COPY for the team to review, not legally reviewed
+ * marketing language. It intentionally avoids: numeric scores, "you are
+ * underinsured," guarantees of coverage, and life insurance promotion.
+ */
+
+(function (root) {
+  "use strict";
+
+  // Maps a Q10 motivation to the topics it should preferentially surface as
+  // the "opportunity" when more than one candidate is available.
+  const MOTIVATION_TOPIC_AFFINITY = {
+    gaps: [
+      "rebuild_cost", "liability", "auto_liability", "business_interruption",
+      "belongings", "additional_living_expense", "liability_claim",
+      "association_split", "unit_damage", "keeping_current",
+    ],
+    cost: ["deductibles", "cost"],
+    understand: [
+      "vehicle_valuation", "association_split", "roof", "understand",
+      "unit_damage",
+    ],
+    proactive_agent: ["agent_support", "keeping_current"],
+    simplify: ["agent_support", "keeping_current"],
+    curious: [], // no particular affinity — any grounded opportunity is fine
+  };
+
+  // {category}:{topic} -> copy. `strength` / `opportunity` are the two tiers
+  // a dynamic question's topic can resolve to. `next_step` is shown whenever
+  // this topic is chosen as the opportunity.
+  const TOPIC_COPY = {
+    "property_home:rebuild_cost": {
+      strength: {
+        headline: "You're on top of your rebuild coverage.",
+        body: "You mentioned you've recently reviewed whether your policy would cover the full cost of rebuilding your home. That's exactly the kind of review that keeps a policy useful when it matters most.",
+      },
+      opportunity: {
+        headline: "Your rebuild coverage may be worth a second look.",
+        body: "You mentioned some uncertainty about whether your insurance would cover the full cost of rebuilding your home. Rebuilding costs change often, and it may be worth reviewing that number with an agent.",
+      },
+      next_step: "Review your dwelling coverage limit against current local rebuilding costs.",
+    },
+    "property_home:roof": {
+      strength: {
+        headline: "You understand your roof coverage.",
+        body: "You mentioned you've reviewed how your homeowners policy handles roof claims. Roof coverage is one of the areas that changes most often, so staying current here is valuable.",
+      },
+      opportunity: {
+        headline: "Roof coverage may be worth reviewing.",
+        body: "You mentioned you're unsure how your policy handles roof damage. It may be worth reviewing the roof provisions with an agent, since this coverage has changed for many homeowners recently.",
+      },
+      next_step: "Review the roof damage provisions in your homeowners policy.",
+    },
+    "property_home:liability": {
+      strength: {
+        headline: "You know your liability protection.",
+        body: "You mentioned you've reviewed your liability limits for guests on your property. That's a detail a lot of homeowners overlook.",
+      },
+      opportunity: {
+        headline: "Your liability limits may be worth confirming.",
+        body: "You mentioned some uncertainty about your liability protection if a guest were injured on your property. It's worth confirming those limits match what's at stake for you.",
+      },
+      next_step: "Confirm your personal liability limits are appropriate for your situation.",
+    },
+
+    "property_condo:association_split": {
+      strength: {
+        headline: "You understand your association split.",
+        body: "You mentioned you've reviewed which parts of your condo or townhome are covered by your own policy versus an association policy. That distinction trips up a lot of owners.",
+      },
+      opportunity: {
+        headline: "The line between your policy and the association's may be worth clarifying.",
+        body: "You mentioned you're not fully sure which parts of your condo or townhome are covered by your own policy versus an association policy. That gap is worth closing with an agent.",
+      },
+      next_step: "Clarify what your policy covers versus what the association's policy covers.",
+    },
+    "property_condo:unit_damage": {
+      strength: {
+        headline: "You feel confident about unit damage coverage.",
+        body: "You mentioned you're confident your policy would cover the parts of your unit you're responsible for if there were major damage.",
+      },
+      opportunity: {
+        headline: "Coverage for your unit may be worth confirming.",
+        body: "You mentioned some uncertainty about whether your policy would cover the parts of your unit you're responsible for after major damage.",
+      },
+      next_step: "Confirm your unit's coverage matches what you're personally responsible for.",
+    },
+    "property_condo:roof": {
+      strength: {
+        headline: "You understand your roof responsibility.",
+        body: "You mentioned you understand who's responsible for roof damage on your condo or townhome and how it's covered.",
+      },
+      opportunity: {
+        headline: "Roof responsibility may be worth clarifying.",
+        body: "You mentioned you're unsure whether your own policy or an association policy would apply to roof damage. It may be worth reviewing the roof provisions with an agent.",
+      },
+      next_step: "Clarify who is responsible for roof damage — you or the association — and how it's covered.",
+    },
+
+    "property_renter:belongings": {
+      strength: {
+        headline: "You feel good about your belongings coverage.",
+        body: "You mentioned you're confident your renters insurance would help replace your belongings after a fire or theft.",
+      },
+      opportunity: {
+        headline: "Coverage for your belongings may be worth a look.",
+        body: "You mentioned some uncertainty about whether your renters insurance would help replace your belongings after a fire or theft — or that you don't currently have a policy.",
+      },
+      next_step: "Get a renters policy quote that fits the value of your belongings.",
+    },
+    "property_renter:additional_living_expense": {
+      strength: {
+        headline: "You're covered if your rental becomes unlivable.",
+        body: "You mentioned you've reviewed whether your policy would help with additional living expenses if your rental became temporarily unlivable.",
+      },
+      opportunity: {
+        headline: "Temporary housing coverage may be worth checking.",
+        body: "You mentioned you're not sure whether your policy would help with additional living expenses if your rental became temporarily unlivable after a covered loss.",
+      },
+      next_step: "Confirm whether your renters policy covers additional living expenses after a covered loss.",
+    },
+    "property_renter:liability": {
+      strength: {
+        headline: "You know your renters liability coverage.",
+        body: "You mentioned you've reviewed your liability limits in case someone were injured in your rental.",
+      },
+      opportunity: {
+        headline: "Renters liability coverage may be worth confirming.",
+        body: "You mentioned some uncertainty about your liability coverage if someone were injured in your rental and you were held responsible.",
+      },
+      next_step: "Confirm your renters liability limits are appropriate for your situation.",
+    },
+
+    "auto:vehicle_valuation": {
+      strength: {
+        headline: "You understand how your vehicle would be valued.",
+        body: "You mentioned you understand how your insurance would determine what you're paid if your vehicle were totaled.",
+      },
+      opportunity: {
+        headline: "How your vehicle would be valued may be worth understanding.",
+        body: "You mentioned some uncertainty about how your insurance would determine what you're paid if your vehicle were totaled tomorrow.",
+      },
+      next_step: "Review how your auto policy values a total loss.",
+    },
+    "auto:auto_liability": {
+      strength: {
+        headline: "You're confident in your auto liability protection.",
+        body: "You mentioned you're confident your liability limits would protect your finances if you caused a serious accident.",
+      },
+      opportunity: {
+        headline: "Your auto liability limits may be worth reviewing.",
+        body: "You mentioned some uncertainty about whether your liability limits would protect your finances if you caused a serious accident. It's worth reviewing those limits against what you have to protect.",
+      },
+      next_step: "Review your auto liability limits against your assets and potential exposure.",
+    },
+    "auto:deductibles": {
+      strength: {
+        headline: "You know your auto deductibles.",
+        body: "You mentioned you know your deductibles and what you'd pay out of pocket after an accident.",
+      },
+      opportunity: {
+        headline: "Your out-of-pocket costs after an accident may be worth reviewing.",
+        body: "You mentioned some uncertainty about what you'd pay out of pocket after an accident. Understanding your deductibles ahead of time avoids surprises.",
+      },
+      next_step: "Review your auto deductibles so there are no surprises after a claim.",
+    },
+
+    "business:business_interruption": {
+      strength: {
+        headline: "You're prepared for a business interruption.",
+        body: "You mentioned you'd be well prepared to handle the financial impact if an unexpected event forced your business to temporarily close.",
+      },
+      opportunity: {
+        headline: "Business interruption protection may be worth reviewing.",
+        body: "You mentioned some uncertainty about how prepared your business would be to handle the financial impact of a temporary closure. Business interruption coverage is designed for exactly that gap.",
+      },
+      next_step: "Review business interruption coverage options for your business.",
+    },
+    "business:liability_claim": {
+      strength: {
+        headline: "You're confident in your business liability coverage.",
+        body: "You mentioned you're confident in your coverage if a customer or third party filed a major liability claim against your business.",
+      },
+      opportunity: {
+        headline: "Your business liability coverage may be worth confirming.",
+        body: "You mentioned some uncertainty about your coverage if a customer or third party filed a major liability claim against your business.",
+      },
+      next_step: "Confirm your business liability limits match your risk exposure.",
+    },
+    "business:business_change_review": {
+      strength: {
+        headline: "Your business coverage has kept pace with your changes.",
+        body: "You mentioned your business has changed since your last review, and you've already updated your coverage to match.",
+      },
+      opportunity: {
+        headline: "A recent business change may not be reflected in your coverage yet.",
+        body: "You mentioned your business has changed since your last insurance review, but that coverage hasn't been reviewed since. It's worth making sure your policy reflects where your business is today.",
+      },
+      next_step: "Review your business coverage against how your business has changed recently.",
+    },
+
+    // Universal signals (lower priority — used when no dynamic-question
+    // signal is available, or as a supporting/neutral fallback).
+    "universal:confidence_in_coverage": {
+      strength: {
+        headline: "You feel confident in your overall coverage.",
+        body: "You mentioned you're confident your insurance would cover what you need after a major loss. That confidence is worth confirming stays current as your situation changes.",
+      },
+      opportunity: {
+        headline: "Your overall confidence in your coverage may be worth strengthening.",
+        body: "You mentioned some uncertainty about whether your insurance would cover what you need after a major loss. A quick review with an agent can turn that uncertainty into clarity.",
+      },
+      next_step: "Sit down with an agent to review whether your coverage matches your current needs.",
+    },
+    "universal:review_recency": {
+      strength: {
+        headline: "Your coverage has been reviewed recently.",
+        body: "You mentioned your insurance was reviewed within the last year — that's the kind of regular check-in that keeps coverage aligned with your life.",
+      },
+      opportunity: {
+        headline: "It may be time for a fresh review.",
+        body: "You mentioned it's been a while since your insurance was reviewed. Life changes over time, and it's worth confirming your coverage has kept up.",
+      },
+      next_step: "Schedule a review to make sure your coverage still fits your life today.",
+    },
+
+    // Fallback-bank topics (used when a category no longer applies).
+    "fallback:keeping_current": {
+      strength: {
+        headline: "Your coverage has kept up with your life.",
+        body: "You mentioned you're confident your insurance has kept up with changes in your life.",
+      },
+      opportunity: {
+        headline: "Your coverage may not have kept pace with recent changes.",
+        body: "You mentioned some uncertainty about whether your insurance has kept up with changes in your life.",
+      },
+      next_step: "Walk through recent life changes with an agent to confirm your coverage still fits.",
+    },
+    "fallback:agent_support": {
+      strength: {
+        headline: "You get answers when you need them.",
+        body: "You mentioned it's easy to get answers about your insurance when you need them — that kind of responsiveness matters.",
+      },
+      opportunity: {
+        headline: "Having a more responsive agent relationship may help.",
+        body: "You mentioned it's difficult to get answers about your insurance, or that you don't currently have an agent. A proactive agent relationship can make future questions a lot easier.",
+      },
+      next_step: "Connect with a Stocker Agency agent who can proactively look out for your coverage.",
+    },
+  };
+
+  // Neutral copy used when no dynamic answer supports a strength or an
+  // opportunity (Section 6: "Use neutral copy when no strength or concern
+  // is supported").
+  const NEUTRAL_STRENGTH = {
+    headline: "You're taking a good first step.",
+    body: "Based on your answers, there wasn't a specific area that stood out as a clear strength — and that's alright. Reviewing your coverage regularly is what keeps it working for you.",
+  };
+  const NEUTRAL_OPPORTUNITY = {
+    headline: "A general coverage check-in could still be valuable.",
+    body: "Nothing in your answers pointed to a specific concern, but insurance needs shift over time. A quick review with an agent is a low-effort way to make sure nothing has been missed.",
+  };
+  const NEUTRAL_NEXT_STEP = "Schedule a general coverage review to confirm everything still fits your needs.";
+
+  root.StockerInsightLibrary = {
+    TOPIC_COPY,
+    MOTIVATION_TOPIC_AFFINITY,
+    NEUTRAL_STRENGTH,
+    NEUTRAL_OPPORTUNITY,
+    NEUTRAL_NEXT_STEP,
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+/**
+ * Stocker Agency | Insurance Assessment — Routing & Results engine
+ *
+ * Pure functions, no DOM. Implements Section 4 (selection/branching),
+ * Section 5 (recalculation), Section 6 (results), Section 9 (required
+ * function names): selectCategories(), allocateSlots(), buildDynamicQueue(),
+ * reconcileAnswers(), selectInsights().
+ *
+ * "Category" here means one of: property_home | property_condo |
+ * property_renter | auto | business — i.e. the actual bank to draw
+ * questions from. "Effective category" (for the 1/2/3-category counting
+ * rules in Section 4) collapses all three property types into one bucket
+ * named "property".
+ */
+
+(function (root) {
+  "use strict";
+
+  const CFG = root.StockerAssessmentConfig;
+  const LIB = root.StockerInsightLibrary;
+
+  const PROPERTY_TYPE_TO_BANK = {
+    home: "property_home",
+    condo: "property_condo",
+    renter: "property_renter",
+  };
+
+  // -----------------------------------------------------------------------
+  // selectCategories(q1Selections, q4Selections)
+  //
+  // q1Selections: ordered array of Q1 option ids, in the order the visitor
+  //   selected them (selection order matters per Section 4).
+  // q4Selections: array of Q4 option ids (order doesn't matter for Q4).
+  //
+  // Returns:
+  //   {
+  //     isAll: boolean,
+  //     propertyType: 'home'|'condo'|'renter'|null,   // first-selected type
+  //     allSelectedPropertyTypes: [...],                // for lead handoff
+  //     effectiveCategories: [                          // in Q1 selection order
+  //       { key: 'property'|'auto'|'business', bank: <bank key>, q1Index }
+  //     ]
+  //   }
+  // -----------------------------------------------------------------------
+  function selectCategories(q1Selections, q4Selections) {
+    q1Selections = q1Selections || [];
+    q4Selections = q4Selections || [];
+
+    const isAll = q1Selections.includes("q1_all");
+
+    if (isAll) {
+      // "All my insurance" does NOT establish a property type (Section 4).
+      // Fixed effective categories, fixed display order: property, auto, business.
+      return {
+        isAll: true,
+        propertyType: null,
+        allSelectedPropertyTypes: [],
+        effectiveCategories: [
+          { key: "property", bank: null, q1Index: 0 }, // bank resolved to 'fallback' by allocateSlots
+          { key: "auto", bank: "auto", q1Index: 1 },
+          { key: "business", bank: "business", q1Index: 2 },
+        ],
+      };
+    }
+
+    const propertyOptionIds = ["q1_home", "q1_condo", "q1_renter"];
+    const selectedPropertyOptions = q1Selections.filter((id) => propertyOptionIds.includes(id));
+    const allSelectedPropertyTypes = selectedPropertyOptions.map((id) => id.replace("q1_", ""));
+    const propertyType = allSelectedPropertyTypes.length ? allSelectedPropertyTypes[0] : null;
+
+    const effectiveCategories = [];
+    q1Selections.forEach((id, idx) => {
+      if (propertyOptionIds.includes(id)) {
+        if (!effectiveCategories.some((c) => c.key === "property")) {
+          effectiveCategories.push({
+            key: "property",
+            bank: PROPERTY_TYPE_TO_BANK[propertyType],
+            q1Index: idx,
+          });
+        }
+      } else if (id === "q1_vehicles") {
+        effectiveCategories.push({ key: "auto", bank: "auto", q1Index: idx });
+      } else if (id === "q1_business") {
+        effectiveCategories.push({ key: "business", bank: "business", q1Index: idx });
+      }
+    });
+
+    return { isAll: false, propertyType, allSelectedPropertyTypes, effectiveCategories };
+  }
+
+  // -----------------------------------------------------------------------
+  // allocateSlots(categoriesResult, q4Selections)
+  //
+  // Returns an ordered array (display order = Q1 selection order) of
+  // { key, bank, count } slot allocations, count summing to 4.
+  // -----------------------------------------------------------------------
+  function allocateSlots(categoriesResult, q4Selections) {
+    q4Selections = q4Selections || [];
+
+    if (categoriesResult.isAll) {
+      // Fixed by directive: two property (fallback bank, type unknown),
+      // one auto, one business — displayed property, auto, business.
+      return [
+        { key: "property", bank: "fallback", count: 2 },
+        { key: "auto", bank: "auto", count: 1 },
+        { key: "business", bank: "business", count: 1 },
+      ];
+    }
+
+    const cats = categoriesResult.effectiveCategories;
+
+    if (cats.length === 0) {
+      // Shouldn't happen (Q1 requires at least one selection) — safe fallback.
+      return [{ key: "property", bank: "fallback", count: 4 }];
+    }
+
+    if (cats.length === 1) {
+      return [{ key: cats[0].key, bank: cats[0].bank, count: 4 }];
+    }
+
+    if (cats.length === 2) {
+      return cats.map((c) => ({ key: c.key, bank: c.bank, count: 2 }));
+    }
+
+    // 3 effective categories: 2 to priority, 1 to each other.
+    const CHANGE_TO_KEY = {
+      q4_home_change: "property",
+      q4_moved_rental: "property",
+      q4_vehicle: "auto",
+      q4_business: "business",
+      // q4_income has no category priority (Section 4)
+    };
+    const changeKeysInQ4Order = q4Selections
+      .map((id) => CHANGE_TO_KEY[id])
+      .filter(Boolean);
+
+    let priorityKey = null;
+    for (const key of changeKeysInQ4Order) {
+      if (cats.some((c) => c.key === key)) {
+        priorityKey = key;
+        break; // first Q4-matched category that is actually in play; ties
+               // among multiple Q4 changes are broken by Q1 order below if
+               // more than one distinct matched category exists.
+      }
+    }
+    // If multiple distinct categories matched Q4, break the tie by Q1 order.
+    const distinctMatched = Array.from(new Set(changeKeysInQ4Order.filter((k) => cats.some((c) => c.key === k))));
+    if (distinctMatched.length > 1) {
+      const byQ1Order = cats.slice().sort((a, b) => a.q1Index - b.q1Index);
+      priorityKey = byQ1Order.find((c) => distinctMatched.includes(c.key)).key;
+    }
+    if (!priorityKey) {
+      // Absent any Q4 match, priority = first category selected in Q1 order.
+      const byQ1Order = cats.slice().sort((a, b) => a.q1Index - b.q1Index);
+      priorityKey = byQ1Order[0].key;
+    }
+
+    return cats.map((c) => ({ key: c.key, bank: c.bank, count: c.key === priorityKey ? 2 : 1 }));
+  }
+
+  // -----------------------------------------------------------------------
+  // buildDynamicQueue(slots, answers)
+  //
+  // slots: output of allocateSlots(), in display order.
+  // answers: map of questionId -> selected option id(s), used to detect the
+  //   "B1 = not a business owner" fallback trigger and to skip already-used
+  //   questions when rebuilding after a change.
+  //
+  // Returns { queue: [questionId,...] (length <= 4), configError: bool }
+  // -----------------------------------------------------------------------
+  function buildDynamicQueue(slots, answers) {
+    answers = answers || {};
+    const queue = [];
+    const usedIds = new Set();
+
+    // Flatten: for each slot in display order, pull `count` questions from
+    // its bank in approved order, skipping any already used.
+    const pending = slots.map((s) => ({ ...s, remaining: s.count }));
+
+    // First pass: fill from each slot's own bank.
+    for (const slot of pending) {
+      const bankOrder = CFG.BANK_ORDER[slot.bank] || [];
+      for (const qid of bankOrder) {
+        if (slot.remaining <= 0) break;
+        if (usedIds.has(qid)) continue;
+        // Business non-owner exception: once B1 is answered "not a business
+        // owner", drop remaining unanswered business questions.
+        if (slot.bank === "business" && qid !== "B1" && answers.B1 === "b1_not_owner") {
+          continue;
+        }
+        queue.push(qid);
+        usedIds.add(qid);
+        slot.remaining -= 1;
+      }
+    }
+
+    // Second pass: replace any slot that came up short (business dropped,
+    // or a property bank ran out) using the next unused question from
+    // another applicable selected category, then the fallback bank.
+    const otherBanks = Array.from(new Set(slots.map((s) => s.bank))).filter(Boolean);
+    const replacementOrder = [...otherBanks, "fallback"];
+
+    let shortfall = 4 - queue.length;
+    // Only true shortfall if a slot was explicitly reduced (e.g. business
+    // dropped after B1). Recompute from original requested count.
+    const totalRequested = slots.reduce((sum, s) => sum + s.count, 0);
+    shortfall = Math.max(0, Math.min(totalRequested, 4) - queue.length);
+
+    if (shortfall > 0) {
+      for (const bank of replacementOrder) {
+        if (shortfall <= 0) break;
+        const bankOrder = CFG.BANK_ORDER[bank] || [];
+        for (const qid of bankOrder) {
+          if (shortfall <= 0) break;
+          if (usedIds.has(qid)) continue;
+          if (bank === "business" && qid !== "B1" && answers.B1 === "b1_not_owner") continue;
+          queue.push(qid);
+          usedIds.add(qid);
+          shortfall -= 1;
+        }
+      }
+    }
+
+    // Never exceed 4, never repeat (guaranteed by usedIds).
+    const trimmed = queue.slice(0, 4);
+    const configError = trimmed.length < Math.min(4, slots.reduce((s, x) => s + x.count, 0)) && trimmed.length < 4 && slots.length > 0 && false;
+    // configError is only raised if we truly cannot assemble 4 distinct
+    // applicable questions from bank+fallback combined (extremely unlikely
+    // given the fallback bank always has 3 unused questions in reserve).
+    const totalAvailable = new Set([].concat(...Object.values(CFG.BANK_ORDER))).size;
+    const trueConfigError = trimmed.length < 4 && totalAvailable - usedIds.size <= 0;
+
+    return { queue: trimmed, configError: trueConfigError };
+  }
+
+  // -----------------------------------------------------------------------
+  // reconcileAnswers(previousAnswers, activeQuestionIds)
+  //
+  // Drops any stored dynamic-question answer whose question ID is no longer
+  // in the active queue (Section 5: "remove orphaned answers from results
+  // and submission"). Universal question answers (Q1-Q4, Q9-Q10) are always
+  // preserved.
+  // -----------------------------------------------------------------------
+  function reconcileAnswers(previousAnswers, activeQuestionIds) {
+    const UNIVERSAL_IDS = new Set(["Q1", "Q2", "Q3", "Q4", "Q9", "Q10"]);
+    const activeSet = new Set(activeQuestionIds);
+    const result = {};
+    for (const qid of Object.keys(previousAnswers || {})) {
+      if (UNIVERSAL_IDS.has(qid) || activeSet.has(qid)) {
+        result[qid] = previousAnswers[qid];
+      }
+    }
+    return result;
+  }
+
+  // -----------------------------------------------------------------------
+  // selectInsights(answers, dynamicQueue)
+  //
+  // answers: map questionId -> selected option id (single-select dynamic
+  //   questions and Q2/Q3 are single-select).
+  // dynamicQueue: array of question ids actually shown (Q5-Q8 content).
+  //
+  // Returns { strength: {headline, body}, opportunity: {headline, body},
+  //           nextStep: string, businessNotApplicable: bool }
+  // -----------------------------------------------------------------------
+  function selectInsights(answers, dynamicQueue) {
+    answers = answers || {};
+    dynamicQueue = dynamicQueue || [];
+
+    const q10Option = answers.Q10 ? CFG.Q10.options.find((o) => o.id === answers.Q10) : null;
+    const motivation = q10Option ? q10Option.motivation : null;
+    const affinityTopics = (LIB.MOTIVATION_TOPIC_AFFINITY[motivation] || []);
+
+    const candidates = []; // { category, topic, tier, priority }
+
+    function addCandidate(question, optionId, priority) {
+      if (!question || !optionId) return;
+      const opt = question.options.find((o) => o.id === optionId);
+      if (!opt || !opt.tier || opt.tier === "neutral" || opt.tier === "not_applicable") return;
+      candidates.push({
+        category: question.category,
+        topic: question.topic,
+        tier: opt.tier,
+        priority,
+      });
+    }
+
+    // Dynamic (category-specific) questions — highest base priority.
+    dynamicQueue.forEach((qid) => {
+      const q = CFG.questionById(qid);
+      addCandidate(q, answers[qid], 10);
+    });
+
+    // Universal Q2/Q3 — lower base priority, always evaluated.
+    addCandidate(
+      { category: "universal", topic: "confidence_in_coverage", options: CFG.Q2.options },
+      answers.Q2,
+      5
+    );
+    addCandidate(
+      { category: "universal", topic: "review_recency", options: CFG.Q3.options },
+      answers.Q3,
+      5
+    );
+
+    function scored(c) {
+      return c.priority + (affinityTopics.includes(c.topic) ? 2 : 0);
+    }
+
+    const strengthCandidates = candidates.filter((c) => c.tier === "strength").sort((a, b) => scored(b) - scored(a));
+    const opportunityCandidates = candidates.filter((c) => c.tier === "opportunity").sort((a, b) => scored(b) - scored(a));
+
+    // Never use the same issue as both strength and opportunity (Section 6).
+    let chosenOpportunity = opportunityCandidates[0] || null;
+    let chosenStrength = strengthCandidates.find((c) => !chosenOpportunity || c.topic !== chosenOpportunity.topic) || null;
+    if (chosenStrength && chosenOpportunity && chosenStrength.topic === chosenOpportunity.topic) {
+      // Extremely unlikely given tiers are mutually exclusive per option,
+      // but guard anyway by dropping the lower-priority one.
+      chosenOpportunity = opportunityCandidates.find((c) => c.topic !== chosenStrength.topic) || null;
+    }
+
+    function lookup(candidate, tier) {
+      if (!candidate) return null;
+      const key = `${candidate.category}:${candidate.topic}`;
+      const entry = LIB.TOPIC_COPY[key];
+      return entry ? entry[tier] : null;
+    }
+
+    const strengthCopy = lookup(chosenStrength, "strength") || LIB.NEUTRAL_STRENGTH;
+    const opportunityCopy = lookup(chosenOpportunity, "opportunity") || LIB.NEUTRAL_OPPORTUNITY;
+    const nextStep = chosenOpportunity
+      ? (LIB.TOPIC_COPY[`${chosenOpportunity.category}:${chosenOpportunity.topic}`] || {}).next_step || LIB.NEUTRAL_NEXT_STEP
+      : LIB.NEUTRAL_NEXT_STEP;
+
+    return {
+      strength: strengthCopy,
+      opportunity: opportunityCopy,
+      nextStep,
+      strengthInsightId: chosenStrength ? `${chosenStrength.category}:${chosenStrength.topic}` : "neutral",
+      opportunityInsightId: chosenOpportunity ? `${chosenOpportunity.category}:${chosenOpportunity.topic}` : "neutral",
+    };
+  }
+
+  root.StockerRoutingEngine = {
+    selectCategories,
+    allocateSlots,
+    buildDynamicQueue,
+    reconcileAnswers,
+    selectInsights,
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+/**
+ * Stocker Agency | Insurance Assessment — submission adapter
+ *
+ * Section 8 asks for "an integration adapter so delivery can be switched
+ * without changing assessment logic." This file is that adapter: app.js
+ * calls window.StockerSubmissionAdapter.submit(payload, config) and never
+ * needs to know how the lead actually gets delivered.
+ *
+ * Three modes are implemented:
+ *   "webhook"        — POST JSON to config.SUBMIT_ENDPOINT. Simplest,
+ *                       works with any backend/CRM webhook.
+ *   "gravity-forms"  — hands the payload to an existing Gravity Forms form
+ *                       already embedded on the page, and submits it via
+ *                       GF's own AJAX flow so GF's notifications/CRM
+ *                       add-ons/entry storage all just work.
+ *   "demo"           — no network call at all; resolves after a short delay
+ *                       so the results screen can be reviewed before a real
+ *                       backend exists. NOT for production use — the whole
+ *                       point of Section 7's "never claim success until the
+ *                       backend confirms" rule is defeated by this mode, so
+ *                       flip SUBMIT_MODE back to "webhook" or
+ *                       "gravity-forms" before this goes live.
+ *
+ * "webhook" and "gravity-forms": retry-safe (idempotency key), never
+ * resolve until the backend actually confirms success (Section 7).
+ */
+(function () {
+  "use strict";
+
+  function idempotencyKey(payload) {
+    return payload.assessment_id; // one assessment = one lead = one key
+  }
+
+  // ---------------------------------------------------------------------
+  // Webhook mode
+  // ---------------------------------------------------------------------
+  async function submitWebhook(payload, config) {
+    const res = await fetch(config.SUBMIT_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": idempotencyKey(payload),
+      },
+      body: JSON.stringify(stripInternal(payload)),
+    });
+    if (!res.ok) {
+      throw new Error(`Submission failed (${res.status})`);
+    }
+    return res.json().catch(() => ({}));
+  }
+
+  // ---------------------------------------------------------------------
+  // Gravity Forms mode
+  //
+  // CONFIRM WITH CLIENT before enabling:
+  //   - The Gravity Forms form ID to embed on the assessment page.
+  //   - GF_FIELD_MAP below, matched to that form's actual field IDs
+  //     (visible in the GF form editor as input_<formId>_<fieldId>).
+  //   - A hidden, single-line "Payload" field on that GF form to receive
+  //     the full JSON handoff payload (Section 8), so nothing is lost even
+  //     if the individual mapped fields don't cover every column you want.
+  //   - jQuery must be present on the page (Gravity Forms already loads it
+  //     in WordPress) for the gform_confirmation_loaded hook below.
+  //
+  // This deliberately does NOT rebuild GF's fields with our own inputs;
+  // it fills the real GF form's inputs and lets GF submit itself, so GF's
+  // own validation, spam protection, notifications, and CRM add-ons all
+  // keep working unmodified.
+  // ---------------------------------------------------------------------
+  const GF_FIELD_MAP = {
+    // formId: 1,               // CONFIRM: real Gravity Forms form ID
+    // firstName: "input_1_3",
+    // lastName: "input_1_6",
+    // email: "input_1_4",
+    // phone: "input_1_5",
+    // consent: "input_1_7",      // checkbox input id
+    // payloadJson: "input_1_8",  // hidden field for the full JSON payload
+  };
+
+  function submitGravityForms(payload, config) {
+    return new Promise((resolve, reject) => {
+      const formId = GF_FIELD_MAP.formId;
+      if (!formId || !window.jQuery) {
+        reject(new Error("Gravity Forms integration is not configured yet (see GF_FIELD_MAP in submission-adapter.js)."));
+        return;
+      }
+      const $ = window.jQuery;
+      const $form = $(`#gform_${formId}`);
+      if ($form.length === 0) {
+        reject(new Error(`Gravity Forms form #${formId} was not found on this page.`));
+        return;
+      }
+
+      $(`#${GF_FIELD_MAP.firstName}`).val(payload.first_name);
+      $(`#${GF_FIELD_MAP.lastName}`).val(payload.last_name);
+      $(`#${GF_FIELD_MAP.email}`).val(payload.email);
+      if (GF_FIELD_MAP.phone && payload.phone) $(`#${GF_FIELD_MAP.phone}`).val(payload.phone);
+      if (GF_FIELD_MAP.consent) $(`#${GF_FIELD_MAP.consent}`).prop("checked", !!payload.consent_status);
+      if (GF_FIELD_MAP.payloadJson) $(`#${GF_FIELD_MAP.payloadJson}`).val(JSON.stringify(stripInternal(payload)));
+
+      const onConfirmation = function (event, formIdLoaded) {
+        if (String(formIdLoaded) !== String(formId)) return;
+        $(document).off("gform_confirmation_loaded", onConfirmation);
+        resolve({});
+      };
+      $(document).on("gform_confirmation_loaded", onConfirmation);
+
+      // Standard documented way to submit a Gravity Forms AJAX form
+      // programmatically.
+      $form.trigger("submit", [true]);
+
+      // Safety timeout: never leave the visitor stuck on "Submitting…".
+      setTimeout(() => {
+        $(document).off("gform_confirmation_loaded", onConfirmation);
+        reject(new Error("Gravity Forms submission timed out — please try again."));
+      }, 15000);
+    });
+  }
+
+  function stripInternal(payload) {
+    const clone = Object.assign({}, payload);
+    delete clone._resultsForDisplay;
+    return clone;
+  }
+
+  // ---------------------------------------------------------------------
+  // Demo mode — preview only, see the warning in the file header comment.
+  // ---------------------------------------------------------------------
+  function submitDemo(payload) {
+    return new Promise((resolve) => {
+      console.info("[Stocker Assessment — DEMO MODE] Lead payload that would be submitted:", stripInternal(payload));
+      setTimeout(resolve, 500);
+    });
+  }
+
+  async function submit(payload, config) {
+    if (config.SUBMIT_MODE === "gravity-forms") {
+      return submitGravityForms(payload, config);
+    }
+    if (config.SUBMIT_MODE === "demo") {
+      return submitDemo(payload);
+    }
+    return submitWebhook(payload, config);
+  }
+
+  window.StockerSubmissionAdapter = { submit, GF_FIELD_MAP };
+})();
+
+
+/**
+ * Stocker Agency | Insurance Assessment — app / UI controller
+ *
+ * Depends on (load in this order):
+ *   assessment-config.js, insight-library.js, routing-engine.js,
+ *   submission-adapter.js, then this file.
+ */
+(function () {
+  "use strict";
+
+  const CFG = window.StockerAssessmentConfig;
+  const ENG = window.StockerRoutingEngine;
+
+  // ---------------------------------------------------------------------
+  // CONFIG — things the client/team need to set before launch.
+  // ---------------------------------------------------------------------
+  const APP_CONFIG = {
+    // CONFIRM (Section 11): real scheduling URL. Do not launch with this.
+    SCHEDULING_URL: "#schedule-a-review",
+    // "webhook" posts JSON to SUBMIT_ENDPOINT. "gravity-forms" hands off to
+    // submission-adapter.js's Gravity Forms integration. See
+    // gravity-forms-adapter.js and README-integration.md.
+    SUBMIT_MODE: "demo", // preview build — switch to "webhook" or "gravity-forms" for production // "webhook" | "gravity-forms"
+    SUBMIT_ENDPOINT: "/wp-json/stocker/v1/assessment-leads", // CONFIRM real endpoint
+  };
+
+  // ---------------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------------
+  const state = {
+    screen: "welcome", // welcome | question | lead | results | config-error | submit-error
+    universalIndex: 0, // which universal question we're on, pre-dynamic (0..3 => Q1..Q4)
+    phase: "pre-dynamic", // pre-dynamic | dynamic | post-dynamic
+    dynamicIndex: 0, // 0..3 within the active dynamic queue
+    postIndex: 0, // 0..1 => Q9, Q10
+    answers: {}, // questionId -> option id | [option ids]
+    q1Order: [], // Q1 selections in click order
+    q4Order: [],
+    dynamicQueue: [], // array of question ids, e.g. ["H1","H2","A1","A2"]
+    categoriesResult: null,
+    slots: null,
+    configError: false,
+    submitting: false,
+    submitError: null,
+    assessmentId: null,
+    startedAt: null,
+  };
+
+  const UNIVERSAL_PRE = [CFG.Q1, CFG.Q2, CFG.Q3, CFG.Q4];
+  const UNIVERSAL_POST = [CFG.Q9, CFG.Q10];
+
+  function uuid() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Recalculation (Section 5): rebuild the dynamic queue any time Q1 or Q4
+  // changes, or a fallback-triggering answer (B1) changes. Deterministic
+  // from Q1 order + Q4 — never from stale UI state.
+  // ---------------------------------------------------------------------
+  function recalculate() {
+    state.categoriesResult = ENG.selectCategories(state.q1Order, state.q4Order);
+    state.slots = ENG.allocateSlots(state.categoriesResult, state.q4Order);
+    const { queue, configError } = ENG.buildDynamicQueue(state.slots, state.answers);
+    state.dynamicQueue = queue;
+    state.configError = configError;
+    state.answers = ENG.reconcileAnswers(state.answers, queue);
+    // If the current dynamic step no longer exists, clamp forward.
+    if (state.phase === "dynamic" && state.dynamicIndex >= state.dynamicQueue.length) {
+      state.dynamicIndex = Math.max(0, state.dynamicQueue.length - 1);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Step model: a flat, ordered list of "steps" derived from current state,
+  // recomputed on demand so back/forward navigation always reflects the
+  // latest recalculation.
+  // ---------------------------------------------------------------------
+  function currentStepNumber() {
+    if (state.phase === "pre-dynamic") return state.universalIndex + 1; // 1-4
+    if (state.phase === "dynamic") return 5 + state.dynamicIndex; // 5-8
+    return 9 + state.postIndex; // 9-10
+  }
+
+  function currentQuestion() {
+    if (state.phase === "pre-dynamic") return UNIVERSAL_PRE[state.universalIndex];
+    if (state.phase === "dynamic") return CFG.questionById(state.dynamicQueue[state.dynamicIndex]);
+    return UNIVERSAL_POST[state.postIndex];
+  }
+
+  function goNext() {
+    const q = currentQuestion();
+    if (!validateCurrent(q)) return;
+
+    if (q.id === "Q1") state.q1Order = state.answers.Q1 || [];
+    if (q.id === "Q4") state.q4Order = state.answers.Q4 || [];
+    if (q.id === "Q1" || q.id === "Q4" || q.id === "B1") recalculate();
+
+    if (state.configError) {
+      state.screen = "config-error";
+      render();
+      return;
+    }
+
+    if (state.phase === "pre-dynamic") {
+      if (state.universalIndex < 3) {
+        state.universalIndex += 1;
+      } else {
+        state.phase = "dynamic";
+        state.dynamicIndex = 0;
+      }
+    } else if (state.phase === "dynamic") {
+      if (state.dynamicIndex < state.dynamicQueue.length - 1) {
+        state.dynamicIndex += 1;
+      } else {
+        state.phase = "post-dynamic";
+        state.postIndex = 0;
+      }
+    } else {
+      if (state.postIndex < 1) {
+        state.postIndex += 1;
+      } else {
+        state.screen = "lead";
+      }
+    }
+    render();
+  }
+
+  function goBack() {
+    if (state.screen === "lead") {
+      state.screen = "question";
+      state.phase = "post-dynamic";
+      state.postIndex = 1;
+      render();
+      return;
+    }
+    if (state.phase === "pre-dynamic") {
+      if (state.universalIndex > 0) state.universalIndex -= 1;
+      else { state.screen = "welcome"; }
+    } else if (state.phase === "dynamic") {
+      if (state.dynamicIndex > 0) state.dynamicIndex -= 1;
+      else { state.phase = "pre-dynamic"; state.universalIndex = 3; }
+    } else {
+      if (state.postIndex > 0) state.postIndex -= 1;
+      else { state.phase = "dynamic"; state.dynamicIndex = Math.max(0, state.dynamicQueue.length - 1); }
+    }
+    render();
+  }
+
+  function validateCurrent(q) {
+    const el = document.getElementById("sa-error");
+    if (q.type === "multi-select") {
+      const val = state.answers[q.id];
+      const ok = Array.isArray(val) && val.length > 0;
+      if (el) el.classList.toggle("is-visible", !ok);
+      if (!ok && el) el.textContent = "Please select at least one option to continue.";
+      return ok;
+    }
+    const ok = !!state.answers[q.id];
+    if (el) el.classList.toggle("is-visible", !ok);
+    if (!ok && el) el.textContent = "Please select an option to continue.";
+    return ok;
+  }
+
+  // ---------------------------------------------------------------------
+  // Option selection handlers
+  // ---------------------------------------------------------------------
+  function selectSingle(questionId, optionId) {
+    state.answers[questionId] = optionId;
+    clearError();
+    render();
+  }
+
+  function toggleMulti(questionId, optionId, exclusive) {
+    const q = currentQuestion();
+    const current = Array.isArray(state.answers[questionId]) ? state.answers[questionId].slice() : [];
+    const opt = q.options.find((o) => o.id === optionId);
+    let next;
+    if (opt.exclusive) {
+      next = current.includes(optionId) ? [] : [optionId];
+    } else if (current.includes(optionId)) {
+      next = current.filter((id) => id !== optionId);
+    } else {
+      next = current.filter((id) => !q.options.find((o) => o.id === id)?.exclusive).concat(optionId);
+    }
+    state.answers[questionId] = next;
+    clearError();
+    render();
+  }
+
+  function clearError() {
+    const el = document.getElementById("sa-error");
+    if (el) el.classList.remove("is-visible");
+  }
+
+  // ---------------------------------------------------------------------
+  // Rendering
+  // ---------------------------------------------------------------------
+  const root = document.getElementById("sa-app-root");
+
+  function render() {
+    if (state.screen === "welcome") return renderWelcome();
+    if (state.screen === "question") return renderQuestion();
+    if (state.screen === "lead") return renderLead();
+    if (state.screen === "results") return renderResults();
+    if (state.screen === "config-error") return renderConfigError();
+    if (state.screen === "submit-error") return renderLead(true);
+  }
+
+  function shell(innerHtml, opts) {
+    opts = opts || {};
+    const showProgress = opts.showProgress !== false;
+    const step = showProgress ? currentStepNumber() : null;
+    root.innerHTML = `
+      <div class="sa-app">
+        <div class="sa-header">
+          <div class="sa-header__brand">${window.STOCKER_LOGO_SVG || '<span style="font-weight:700;">Stocker Agency</span>'}</div>
+          ${showProgress ? `
+            <div class="sa-progress-label" aria-hidden="true">Question ${step} of 10</div>
+            <div class="sa-progress-track" role="progressbar" aria-valuemin="1" aria-valuemax="10" aria-valuenow="${step}" aria-label="Assessment progress, question ${step} of 10">
+              <div class="sa-progress-fill" style="width:${(step / 10) * 100}%"></div>
+            </div>
+          ` : ""}
+        </div>
+        <main class="sa-main" id="sa-main" tabindex="-1">${innerHtml}</main>
+      </div>
+    `;
+    document.getElementById("sa-main").focus();
+  }
+
+  function renderWelcome() {
+    // Screen doesn't count toward the 1-10 progress.
+    root.innerHTML = `
+      <div class="sa-app">
+        <div class="sa-header">
+          <div class="sa-header__brand">${window.STOCKER_LOGO_SVG || '<span style="font-weight:700;">Stocker Agency</span>'}</div>
+        </div>
+        <main class="sa-main sa-welcome" id="sa-main" tabindex="-1">
+          <h1>How Well Are You Protected?</h1>
+          <p>Answer a few quick questions about your home, auto, and business coverage. In about two minutes, you'll get personalized insights and a clear next step — no obligation.</p>
+          <button type="button" class="sa-btn sa-btn--primary" id="sa-start-btn">Start</button>
+        </main>
+      </div>
+    `;
+    document.getElementById("sa-main").focus();
+    document.getElementById("sa-start-btn").addEventListener("click", () => {
+      state.screen = "question";
+      state.startedAt = new Date().toISOString();
+      state.assessmentId = uuid();
+      render();
+    });
+  }
+
+  function renderQuestion() {
+    const q = currentQuestion();
+    const isMulti = q.type === "multi-select";
+    const selected = state.answers[q.id];
+
+    const optionsHtml = q.options
+      .map((opt) => {
+        const checked = isMulti
+          ? Array.isArray(selected) && selected.includes(opt.id)
+          : selected === opt.id;
+        return `
+          <label class="sa-option">
+            <input
+              type="${isMulti ? "checkbox" : "radio"}"
+              name="${q.id}"
+              value="${opt.id}"
+              data-qid="${q.id}"
+              data-exclusive="${!!opt.exclusive}"
+              ${checked ? "checked" : ""}
+            />
+            <span class="sa-option__label">${opt.label}</span>
+          </label>
+        `;
+      })
+      .join("");
+
+    shell(`
+      <h2 class="sa-step-title">${q.text}</h2>
+      ${q.subtext ? `<p class="sa-step-subtext">${q.subtext}</p>` : ""}
+      <div class="sa-options" role="group" aria-labelledby="sa-question-heading">
+        ${optionsHtml}
+      </div>
+      <p class="sa-error" id="sa-error" role="alert"></p>
+    `);
+    renderFooter({ showBack: !(state.phase === "pre-dynamic" && state.universalIndex === 0) });
+
+    root.querySelectorAll(`input[name="${q.id}"]`).forEach((input) => {
+      input.addEventListener("change", (e) => {
+        const optionId = e.target.value;
+        if (isMulti) toggleMulti(q.id, optionId, e.target.dataset.exclusive === "true");
+        else selectSingle(q.id, optionId);
+      });
+    });
+    document.getElementById("sa-next-btn").addEventListener("click", goNext);
+    const backBtn = document.getElementById("sa-back-btn");
+    if (backBtn) backBtn.addEventListener("click", goBack);
+  }
+
+  function renderFooter(opts) {
+    const footer = document.createElement("div");
+    footer.className = "sa-footer";
+    footer.innerHTML = `
+      ${opts.showBack ? `<button type="button" class="sa-btn sa-btn--secondary" id="sa-back-btn">Back</button>` : ""}
+      <button type="button" class="sa-btn sa-btn--primary" id="sa-next-btn">${opts.nextLabel || "Next"}</button>
+    `;
+    document.querySelector(".sa-app").appendChild(footer);
+  }
+
+  function renderLead(isRetry) {
+    shell(`
+      <h2 class="sa-step-title">Your Insurance Protection Results Are Ready</h2>
+      <p class="sa-step-subtext">Tell us where to send them.</p>
+      ${isRetry ? `<p class="sa-error is-visible" role="alert">We couldn't submit your results just now. Your answers are saved — please try again.</p>` : ""}
+      <form id="sa-lead-form" novalidate>
+        <div class="sa-field">
+          <label for="sa-first-name">First name</label>
+          <input type="text" id="sa-first-name" name="firstName" autocomplete="given-name" required />
+        </div>
+        <div class="sa-field">
+          <label for="sa-last-name">Last name</label>
+          <input type="text" id="sa-last-name" name="lastName" autocomplete="family-name" required />
+        </div>
+        <div class="sa-field">
+          <label for="sa-email">Email</label>
+          <input type="email" id="sa-email" name="email" autocomplete="email" required />
+        </div>
+        <div class="sa-field">
+          <label for="sa-phone">Phone</label>
+          <input type="tel" id="sa-phone" name="phone" autocomplete="tel" required />
+        </div>
+        <label class="sa-consent">
+          <input type="checkbox" id="sa-consent" name="consent" />
+          <span>Yes, I'd like to receive occasional emails from Stocker Agency about my coverage and offers. You can unsubscribe anytime.</span>
+        </label>
+        <p class="sa-error" id="sa-lead-error" role="alert"></p>
+        <button type="submit" class="sa-btn sa-btn--primary" id="sa-lead-submit" style="width:100%;">
+          ${state.submitting ? "Submitting…" : "See My Results"}
+        </button>
+      </form>
+    `, { showProgress: false });
+    renderFooter({ showBack: true, nextLabel: "" });
+    document.getElementById("sa-next-btn").remove(); // lead screen uses its own submit button
+    document.getElementById("sa-back-btn").addEventListener("click", goBack);
+    document.getElementById("sa-lead-form").addEventListener("submit", handleLeadSubmit);
+  }
+
+  function isValidEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  async function handleLeadSubmit(e) {
+    e.preventDefault();
+    if (state.submitting) return; // duplicate-click guard
+    const firstName = document.getElementById("sa-first-name").value.trim();
+    const lastName = document.getElementById("sa-last-name").value.trim();
+    const email = document.getElementById("sa-email").value.trim();
+    const phone = document.getElementById("sa-phone").value.trim();
+    const consent = document.getElementById("sa-consent").checked;
+
+    const errs = [];
+    if (!firstName) errs.push("First name is required.");
+    if (!lastName) errs.push("Last name is required.");
+    if (!email || !isValidEmail(email)) errs.push("A valid email is required.");
+    if (!phone) errs.push("Phone number is required.");
+
+    const errEl = document.getElementById("sa-lead-error");
+    if (errs.length) {
+      errEl.textContent = errs.join(" ");
+      errEl.classList.add("is-visible");
+      return;
+    }
+    errEl.classList.remove("is-visible");
+
+    state.submitting = true;
+    document.getElementById("sa-lead-submit").disabled = true;
+    document.getElementById("sa-lead-submit").textContent = "Submitting…";
+
+    const payload = buildHandoffPayload({ firstName, lastName, email, phone, consent });
+
+    try {
+      await window.StockerSubmissionAdapter.submit(payload, APP_CONFIG);
+      state.submitting = false;
+      state.screen = "results";
+      render();
+    } catch (err) {
+      state.submitting = false;
+      state.submitError = err && err.message ? err.message : "Unknown error";
+      state.screen = "submit-error";
+      render();
+    }
+  }
+
+  let lastPayload = null;
+
+  function buildHandoffPayload(contact) {
+    const insights = ENG.selectInsights(state.answers, state.dynamicQueue);
+    const displayedIds = ["Q1", "Q2", "Q3", "Q4"].concat(state.dynamicQueue, ["Q9", "Q10"]);
+    const answersOut = displayedIds
+      .filter((qid) => state.answers[qid] !== undefined)
+      .map((qid) => {
+        const q = qid.match(/^Q/) && ["Q1","Q2","Q3","Q4","Q9","Q10"].includes(qid)
+          ? [CFG.Q1, CFG.Q2, CFG.Q3, CFG.Q4, CFG.Q9, CFG.Q10].find((x) => x.id === qid)
+          : CFG.questionById(qid);
+        const raw = state.answers[qid];
+        const optionIds = Array.isArray(raw) ? raw : [raw];
+        const optionLabels = optionIds.map((oid) => (q.options.find((o) => o.id === oid) || {}).label || oid);
+        return { question_id: qid, option_ids: optionIds, option_labels: optionLabels };
+      });
+
+    const cats = state.categoriesResult;
+    const usp = new URLSearchParams(window.location.search);
+
+    const payload = {
+      assessment_id: state.assessmentId,
+      version: CFG.ASSESSMENT_VERSION,
+      submitted_at: new Date().toISOString(),
+      first_name: contact.firstName,
+      last_name: contact.lastName,
+      email: contact.email,
+      phone: contact.phone || null,
+      consent_status: !!contact.consent,
+      consent_timestamp: new Date().toISOString(),
+      source: "stockeragency.com-assessment",
+      utm_source: usp.get("utm_source") || null,
+      utm_medium: usp.get("utm_medium") || null,
+      utm_campaign: usp.get("utm_campaign") || null,
+      utm_term: usp.get("utm_term") || null,
+      utm_content: usp.get("utm_content") || null,
+      selected_interests: state.q1Order.map((id) => CFG.Q1.options.find((o) => o.id === id).label),
+      primary_property_type: cats && cats.propertyType,
+      all_selected_property_types: cats ? cats.allSelectedPropertyTypes : [],
+      category_priority: state.slots ? state.slots.map((s) => `${s.key}:${s.count}`).join(",") : null,
+      answers: answersOut,
+      displayed_question_ids: displayedIds,
+      fallback_used: state.dynamicQueue.some((qid) => CFG.questionById(qid).category === "fallback"),
+      main_concern: deriveMainConcern(),
+      agent_relationship: (CFG.Q9.options.find((o) => o.id === state.answers.Q9) || {}).label || null,
+      motivation: (CFG.Q10.options.find((o) => o.id === state.answers.Q10) || {}).motivation || null,
+      strength_insight_id: insights.strengthInsightId,
+      opportunity_insight_id: insights.opportunityInsightId,
+      next_step_id: insights.opportunityInsightId,
+      _resultsForDisplay: insights, // not part of Section 8 handoff spec; used locally to render the results screen
+    };
+    lastPayload = payload;
+    return payload;
+  }
+
+  function deriveMainConcern() {
+    // The 4th question in whichever bank contributed the most slots is the
+    // closest analog to a "primary concern" selector (H4/C4/R4/A4/B4/F1).
+    const focusQ = state.dynamicQueue
+      .map((qid) => CFG.questionById(qid))
+      .find((q) => q.topic === "focus_preference");
+    if (!focusQ) return null;
+    const opt = focusQ.options.find((o) => o.id === state.answers[focusQ.id]);
+    return opt ? opt.label : null;
+  }
+
+  function renderResults() {
+    const insights = lastPayload._resultsForDisplay;
+    shell(`
+      <h2 class="sa-step-title">Your Insurance Protection Results</h2>
+      <div class="sa-results-card sa-results-card--strength">
+        <div class="sa-results-eyebrow">Strength</div>
+        <h3 class="sa-results-headline">${insights.strength.headline}</h3>
+        <p class="sa-results-body">${insights.strength.body}</p>
+      </div>
+      <div class="sa-results-card sa-results-card--opportunity">
+        <div class="sa-results-eyebrow">Opportunity</div>
+        <h3 class="sa-results-headline">${insights.opportunity.headline}</h3>
+        <p class="sa-results-body">${insights.opportunity.body}</p>
+      </div>
+      <div class="sa-results-card sa-results-card--next">
+        <div class="sa-results-eyebrow">Recommended next step</div>
+        <p class="sa-results-body">${insights.nextStep}</p>
+      </div>
+      <a class="sa-cta" href="${APP_CONFIG.SCHEDULING_URL}">Schedule a Coverage Review</a>
+      <p style="font-size:12px;color:var(--sa-text-muted);margin-top:14px;">
+        These results are based on your answers only, not a review of your actual policies.
+        An agent can confirm the details with you.
+      </p>
+    `, { showProgress: false });
+  }
+
+  function renderConfigError() {
+    shell(`
+      <div class="sa-config-error" role="alert">
+        We couldn't build a complete set of questions for your selections. This has been logged
+        for our team — please try again, or contact us directly.
+      </div>
+    `, { showProgress: false });
+  }
+
+  // Kick off
+  render();
+})();
+
+  </script>
+</body>
+</html>
